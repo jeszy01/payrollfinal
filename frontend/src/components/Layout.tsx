@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
+import { startPolling } from '../lib/polling'
 
 const titles: Record<string, [string, string]> = {
   '/': ['Dashboard', 'Overview'],
@@ -35,6 +36,7 @@ export default function Layout() {
   const [title, subtitle] = titles[pathname] ?? ['', '']
   const group = groups[pathname]
 
+  useEffect(() => startPolling(), [])
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light'
     localStorage.setItem('theme', dark ? 'dark' : 'light')
