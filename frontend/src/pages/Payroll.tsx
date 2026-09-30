@@ -46,27 +46,31 @@ export default function Payroll() {
 
   const cutoff = tab === 'active' ? current : (past.find((c) => c.key === picked) ?? past[0])
 
-  // One row per employee: (monthly ÷ 2) − deductions + overtime
+   // One row per employee: (days worked × daily rate) − late/undertime + overtime
   const rows = useMemo<Row[]>(() => {
     if (!cutoff) return []
     return employees
       .filter((e) => e.status === 'Active')
       .map((emp) => {
         const row: Row = { id: emp.id, name: emp.name, days: 0, late: 0, under: 0, over: 0, absent: 0, total: 0 }
+              let gross = 0
         let deduction = 0
         let overtimePay = 0
         for (const r of records) {
           if (r.employeeId !== emp.id || r.date < cutoff.start || r.date > cutoff.end) continue
           const c = computeDay(r)
-          if (c.status !== 'absent') row.days += 1
+          if (c.status !== 'absent') {
+            row.days += 1
+            gross += r.dailyRate ?? emp.dailyRate
+            deduction += c.deduction // only counted on days that were worked
+          }
           row.late += c.lateMinutes
           row.under += c.undertimeMinutes
           row.over += c.overtimeMinutes
           row.absent += c.absences
-          deduction += c.deduction
           overtimePay += c.overtimePay
         }
-        row.total = Math.max(0, emp.baseSalary / 2 - deduction) + overtimePay
+              row.total = Math.max(0, gross - deduction) + overtimePay
         return row
       })
       .sort((a, b) => a.name.localeCompare(b.name))
