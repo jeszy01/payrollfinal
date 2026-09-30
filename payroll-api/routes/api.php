@@ -9,6 +9,7 @@ use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceEventController;
 use App\Http\Middleware\ApiKey;
+use App\Http\Controllers\PayrollRunController;
 
 Route::get('/health', fn () => ['status' => 'ok']);
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
@@ -31,4 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/adjustments', [AdjustmentController::class, 'store']);
     Route::post('/adjustments/{adjustment}/approve', [AdjustmentController::class, 'approve']);
     Route::post('/adjustments/{adjustment}/reject', [AdjustmentController::class, 'reject']);
+
+    Route::get('/payroll-runs', [PayrollRunController::class, 'index']);
+    Route::post('/payroll-runs', [PayrollRunController::class, 'store']);
+    Route::get('/payroll-runs/{payrollRun}', [PayrollRunController::class, 'show']);
 });
