@@ -58,24 +58,35 @@ class PayrollRunController extends Controller
             'periodEnd' => 'required|date_format:Y-m-d|after_or_equal:periodStart',
         ]);
 
-        if (PayrollRun::where('period_start', $data['periodStart'])->where('period_end', $data['periodEnd'])->exists()) {
-            return response()->json(['message' => 'Payroll for this period already exists.'], 422);
+        // Any overlap, not just an exact match
+        if (PayrollRun::where('period_start', '<=', $data['periodEnd'])
+            ->where('period_end', '>=', $data['periodStart'])->exists()) {
+            return response()->json(['message' => 'This period overlaps an existing payroll run.'], 422);
         }
 
-        $run = DB::transaction(function () use ($data) {
-        $run = PayrollRun::create([
-    'period_start' => $data['periodStart'],
-    'period_end' => $data['periodEnd'],
-    'status' => 'draft',
-]);
+        $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])->get();
 
-            $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])
-                ->get()->groupBy('employee_id');
+        // Timed in but not timed out yet
+        $open = $records->filter(fn ($r) => DayCalculator::compute($r)['status'] === 'working')->count();
+        if ($open > 0) {
+            return response()->json([
+                'message' => "{$open} attendance record(s) have no time-out yet. Complete them before generating payroll.",
+            ], 422);
+        }
 
-            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $records) {
+        $byEmployee = $records->groupBy('employee_id');
+
+        $run = DB::transaction(function () use ($data, $byEmployee) {
+            $run = PayrollRun::create([
+                'period_start' => $data['periodStart'],
+                'period_end' => $data['periodEnd'],
+                'status' => 'draft',
+            ]);
+
+            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee) {
                 $s = ['days' => 0, 'late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0, 'gross' => 0.0, 'deduction' => 0.0, 'otPay' => 0.0];
 
-                foreach ($records->get($emp->id, collect()) as $r) {
+                foreach ($byEmployee->get($emp->id, collect()) as $r) {
                     $c = DayCalculator::compute($r);
                     if ($c['status'] !== 'absent') {
                         $s['days']++;
@@ -90,7 +101,7 @@ class PayrollRunController extends Controller
                 }
 
                 $total = round(max(0, $s['gross'] - $s['deduction']) + $s['otPay'], 2);
-                $sss = 0; $pagIbig = 0; $claims = 0; // susunod na step
+                $sss = 0; $pagIbig = 0; $claims = 0; // next step
 
                 Payslip::create([
                     'payroll_run_id' => $run->id,
@@ -115,5 +126,38 @@ class PayrollRunController extends Controller
         });
 
         return response()->json($this->format($run->load('payslips')), 201);
+    }
+
+    // draft -> approved
+    public function approve(PayrollRun $payrollRun)
+    {
+        if ($payrollRun->status !== 'draft') {
+            return response()->json(['message' => 'Only a draft payroll can be approved.'], 422);
+        }
+        $payrollRun->update(['status' => 'approved']);
+        return $this->format($payrollRun->load('payslips'));
+    }
+
+    // approved -> released (this is what shows under Archived)
+    public function release(PayrollRun $payrollRun)
+    {
+        if ($payrollRun->status !== 'approved') {
+            return response()->json(['message' => 'Approve the payroll before releasing it.'], 422);
+        }
+        $payrollRun->update(['status' => 'released']);
+        return $this->format($payrollRun->load('payslips'));
+    }
+
+    // drafts only
+    public function destroy(PayrollRun $payrollRun)
+    {
+        if ($payrollRun->status !== 'draft') {
+            return response()->json(['message' => 'Only a draft payroll can be deleted.'], 422);
+        }
+        DB::transaction(function () use ($payrollRun) {
+            $payrollRun->payslips()->delete();
+            $payrollRun->delete();
+        });
+        return response()->noContent();
     }
 }
