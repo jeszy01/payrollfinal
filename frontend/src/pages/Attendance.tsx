@@ -5,9 +5,10 @@ import { useEmployees } from '../lib/employeeStore'
 import { nowHHmm, todayStr } from '../lib/payroll'
 import { useSettings } from '../lib/settingsStore'
 
-const btn = 'rounded-lg px-3.5 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40'
+const btn =
+  'rounded-xl px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40'
 
-// Hiwalay na page para sa demo ng time in / time out (walang sidebar).
+// Standalone page for the time in / time out demo (no sidebar).
 export default function Attendance() {
   const records = useAttendanceRecords()
   const employees = useEmployees()
@@ -16,38 +17,41 @@ export default function Attendance() {
   const date = todayStr()
 
   return (
-    <div className="min-h-screen bg-[#f4f6fa] p-6 font-sans text-slate-900">
+    <div className="min-h-screen p-7" style={{ background: 'var(--bg-page)', color: 'var(--ink)' }}>
       <div className="mx-auto max-w-2xl">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-bold">Attendance (Demo)</h1>
-            <p className="text-sm text-slate-500">Time in / time out ng mga employee</p>
+            <h1 className="pg-title">Attendance (Demo)</h1>
+            <p className="pg-sub">Employee time in / time out</p>
           </div>
-          <Link to="/payroll/runs" className="text-sm font-medium text-[#2f5fe0]">← Payroll Runs</Link>
+          <Link to="/payroll/runs" className="btn-outline">← Payroll Runs</Link>
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-4">
-          <label className="text-sm font-medium">Oras:</label>
+        <div className="card mb-5 flex flex-wrap items-center gap-3 p-4">
+          <label className="text-sm font-semibold">Time:</label>
           <input
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            className="rounded-xl border bg-transparent px-3 py-2 text-sm"
+            style={{ borderColor: 'var(--line)' }}
           />
-          <button onClick={() => setTime(nowHHmm())} className="text-sm text-[#2f5fe0]">Gamitin ang ngayon</button>
+          <button onClick={() => setTime(nowHHmm())} className="text-sm font-semibold text-[var(--brand)]">
+            Use current time
+          </button>
           <button
-            onClick={() => confirm('Burahin lahat ng attendance demo data?') && resetRecords()}
-            className="ml-auto text-sm text-red-600"
+            onClick={() => confirm('Delete all attendance demo data?') && resetRecords()}
+            className="ml-auto text-sm font-semibold text-red-600"
           >
             Reset demo
           </button>
         </div>
 
-        <div className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
+        <div className="card divide-y" style={{ ['--tw-divide-opacity' as string]: 1 }}>
           {employees.length === 0 && (
-            <p className="p-6 text-center text-sm text-slate-500">
-              Wala pang employee. Mag-add muna sa{' '}
-              <Link to="/employees" className="text-[#2f5fe0]">Employee Data</Link>.
+            <p className="p-8 text-center text-sm text-[var(--muted)]">
+              No employees yet. Add one in{' '}
+              <Link to="/employees" className="font-semibold text-[var(--brand)]">Employee Data</Link>.
             </p>
           )}
           {employees.map((emp) => {
@@ -59,15 +63,15 @@ export default function Attendance() {
                 ? `Timed out ${rec.timeOut} (in ${rec.timeIn})`
                 : rec?.timeIn
                   ? `Timed in ${rec.timeIn}`
-                  : 'Wala pang time in'
+                  : 'No time in yet'
             return (
-              <div key={emp.id} className="flex flex-wrap items-center gap-3 p-4">
+              <div key={emp.id} className="flex flex-wrap items-center gap-3 p-5" style={{ borderColor: 'var(--line)' }}>
                 <div className="min-w-40 flex-1">
-                  <strong className="text-sm">{emp.name}</strong>
-                  <p className="text-xs text-slate-500">{status}</p>
+                  <strong className="text-[15px]">{emp.name}</strong>
+                  <p className="text-xs text-[var(--muted)]">{status}</p>
                 </div>
                 <button
-                  className={`${btn} bg-[#2f5fe0]`}
+                  className={`${btn} bg-[var(--brand)]`}
                   disabled={!!rec}
                   onClick={() => applyRecord({ ...base, timeIn: time })}
                 >

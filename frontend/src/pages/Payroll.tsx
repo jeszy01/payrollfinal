@@ -49,13 +49,13 @@ export default function Payroll() {
 
   return (
     <>
-      <div className="mb-4 inline-flex rounded-[10px] border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-[#131c2e]">
+      <div className="card mb-5 inline-flex gap-1 p-1">
         {(['active', 'archived'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold capitalize ${
-              tab === t ? 'bg-slate-900 text-white' : 'text-slate-500'
+            className={`rounded-lg px-5 py-2 text-sm font-semibold capitalize transition ${
+              tab === t ? 'bg-[var(--brand)] text-white shadow-sm' : 'text-[var(--muted)]'
             }`}
           >
             {t}
@@ -63,30 +63,32 @@ export default function Payroll() {
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#131c2e]">
-        <table className="w-full border-collapse text-sm">
+      <div className="card overflow-x-auto">
+        <table className="tbl">
           <thead>
             <tr>
               {columns.map((c) => (
-                <th key={c} className="border-b border-slate-200 px-5 py-3.5 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-700">
-                  {c}
-                </th>
+                <th key={c}>{c}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={columns.length} className="p-10 text-center text-slate-500">Waiting for attendance data…</td></tr>
+              <tr>
+                <td colSpan={columns.length} className="!py-12 text-center text-[var(--muted)]">
+                  Waiting for attendance data…
+                </td>
+              </tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} className="border-t border-slate-200 first:border-t-0 dark:border-slate-700">
-                <td className="px-5 py-3.5"><strong>{r.name}</strong></td>
-                <td className="px-5 py-3.5">{r.days}</td>
-                <td className="px-5 py-3.5">{hrs(r.late)}</td>
-                <td className="px-5 py-3.5">{hrs(r.under)}</td>
-                <td className="px-5 py-3.5">{hrs(r.over)}</td>
-                <td className="px-5 py-3.5">{r.absent || '—'}</td>
-                <td className="px-5 py-3.5"><strong>{peso(r.total)}</strong></td>
+              <tr key={r.id}>
+                <td className="font-bold">{r.name}</td>
+                <td>{r.days}</td>
+                <td>{hrs(r.late)}</td>
+                <td>{hrs(r.under)}</td>
+                <td>{hrs(r.over)}</td>
+                <td>{r.absent || '—'}</td>
+                <td className="font-bold">{peso(r.total)}</td>
               </tr>
             ))}
           </tbody>

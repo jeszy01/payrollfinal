@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, ChevronDown, LogOut, Moon, ScrollText, Search, Sun, UserCog } from 'lucide-react'
 
-type Props = { title: string; subtitle: string; dark: boolean; onToggleTheme: () => void }
+type Props = { dark: boolean; onToggleTheme: () => void }
 
-export default function Header({ title, subtitle, dark, onToggleTheme }: Props) {
+const menuItem =
+  'flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/10'
+
+export default function Header({ dark, onToggleTheme }: Props) {
   const [menu, setMenu] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -17,48 +20,51 @@ export default function Header({ title, subtitle, dark, onToggleTheme }: Props) 
   }, [])
 
   return (
-    <header className="header">
-      <div>
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
-      </div>
+    <header className="hd">
+      <label className="hd-search">
+        <Search size={17} />
+        <input
+          className="w-full bg-transparent outline-none placeholder:text-[var(--muted)]"
+          placeholder="Search employees, records..."
+        />
+      </label>
 
-      <div className="header-right">
-        <label className="search">
-          <Search size={16} />
-          <input placeholder="Search employees, records..." />
-        </label>
-        <button className="icon-btn" aria-label="Notifications">
+      <div className="flex items-center gap-3">
+        <button className="hd-icon" aria-label="Notifications">
           <Bell size={18} />
         </button>
-        <button className="icon-btn" onClick={onToggleTheme} aria-label="Toggle theme">
+        <button className="hd-icon" onClick={onToggleTheme} aria-label="Toggle theme">
           {dark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-        <div className="divider" />
 
-        <div className="profile" ref={ref}>
-          <button className="profile-btn" onClick={() => setMenu((m) => !m)}>
-            <div className="avatar dark">A</div>
-            <div className="user">
-              <strong>Admin</strong>
-              <span>Admin</span>
+        <div className="relative" ref={ref}>
+          <button className="hd-admin" onClick={() => setMenu((m) => !m)}>
+            <div className="grid size-10 place-items-center rounded-full bg-[var(--brand)] text-sm font-bold text-white">
+              A
             </div>
-            <ChevronDown size={16} />
+            <div className="flex flex-col text-left leading-tight">
+              <strong className="text-sm">Admin</strong>
+              <span className="text-xs text-[var(--muted)]">Admin</span>
+            </div>
+            <ChevronDown size={16} className="text-[var(--muted)]" />
           </button>
 
           {menu && (
-            <div className="dropdown">
-              <div className="dropdown-head">
-                <strong>Admin</strong>
-                <span>Admin</span>
+            <div className="card absolute right-0 top-[calc(100%+8px)] z-50 w-64 p-2">
+              <div className="flex flex-col border-b px-3 py-2.5" style={{ borderColor: 'var(--line)' }}>
+                <strong className="text-sm">Admin</strong>
+                <span className="text-xs text-[var(--muted)]">Admin</span>
               </div>
-              <Link to="/settings" onClick={() => setMenu(false)}>
+              <Link to="/settings" className={menuItem} onClick={() => setMenu(false)}>
                 <UserCog size={16} /> User &amp; account settings
               </Link>
-              <Link to="/audit-logs" onClick={() => setMenu(false)}>
+              <Link to="/audit-logs" className={menuItem} onClick={() => setMenu(false)}>
                 <ScrollText size={16} /> Logs &amp; audit
               </Link>
-              <button className="danger" onClick={() => alert('Sign out: ikakabit sa Laravel auth sa susunod na step')}>
+              <button
+                className={`${menuItem} text-red-500`}
+                onClick={() => alert('Sign out will be connected to Laravel auth in a later step')}
+              >
                 <LogOut size={16} /> Sign out
               </button>
             </div>
