@@ -20,7 +20,7 @@ export default function App() {
         <Route path="/audit-logs" element={<Placeholder title="Logs & audit" subtitle="System activity trail" />} />
         <Route path="/settings" element={<Placeholder title="User & account settings" subtitle="Manage your account" />} />
         <Route path="/compensation/grades" element={<SalaryGrades />} />
-        <Route path="/compensation/adjustments" element={<Placeholder title="Adjustment Requests" subtitle="Salary changes and promotions" />} />
+        <Route path="/compensation/adjustments" element={<Adjustments />} />
         
       </Route>
     </Routes>
