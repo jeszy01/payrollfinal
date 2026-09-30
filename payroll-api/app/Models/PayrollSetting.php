@@ -22,4 +22,15 @@ class PayrollSetting extends Model
     {
         return static::query()->first() ?? static::create([]);
     }
+
+        public function toRules(): array
+    {
+        return [
+            'shiftStart' => $this->shift_start,
+            'shiftEnd' => $this->shift_end,
+            'paidHoursPerDay' => $this->paid_hours_per_day,
+            'overtimeMultiplier' => $this->overtime_multiplier,
+            'roundingMinutes' => $this->rounding_minutes,
+        ];
+    }
 }
