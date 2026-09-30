@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Bell, ChevronDown, LogOut, Moon, ScrollText, Search, Sun, UserCog } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { logout } from '../lib/auth'
 
 type Props = { dark: boolean; onToggleTheme: () => void }
 
@@ -9,6 +10,7 @@ const menuItem =
 
 export default function Header({ dark, onToggleTheme }: Props) {
   const [menu, setMenu] = useState(false)
+  const navigate = useNavigate()
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -63,7 +65,10 @@ export default function Header({ dark, onToggleTheme }: Props) {
               </Link>
               <button
                 className={`${menuItem} text-red-500`}
-                onClick={() => alert('Sign out will be connected to Laravel auth in a later step')}
+                onClick={async () => {
+  await logout()
+  navigate('/login', { replace: true })
+}}
               >
                 <LogOut size={16} /> Sign out
               </button>

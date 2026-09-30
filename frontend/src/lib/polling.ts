@@ -14,7 +14,8 @@ export function startPolling() {
       refreshAdjustments(),
     ]).catch(() => {}) // ignore network errors, retry on the next tick
   }
-
+  
+  tick()
   const id = setInterval(tick, INTERVAL_MS)
   document.addEventListener('visibilitychange', tick) // refresh right away when the tab is reopened
   return () => {
