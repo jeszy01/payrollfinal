@@ -8,7 +8,7 @@ use App\Http\Controllers\AttendanceController;
 
 Route::get('/health', fn () => ['status' => 'ok']);
 
-Route::get('/positions', [PositionController::class, 'index']);
+Route::apiResource('positions', PositionController::class)->except(['show']);
 Route::apiResource('employees', EmployeeController::class)->except(['show']);
 Route::get('/settings', [SettingsController::class, 'show']);
 Route::put('/settings', [SettingsController::class, 'update']);

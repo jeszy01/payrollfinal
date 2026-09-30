@@ -4,16 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Position extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['name', 'department', 'salary_grade_id'];
+    protected $fillable = ['name', 'department', 'grade_code', 'monthly_salary'];
 
-    public function salaryGrade(): BelongsTo
+    protected $casts = ['monthly_salary' => 'float'];
+
+    public function employees(): HasMany
     {
-        return $this->belongsTo(SalaryGrade::class);
+        return $this->hasMany(Employee::class);
     }
 }

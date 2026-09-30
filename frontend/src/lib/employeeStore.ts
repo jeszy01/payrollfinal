@@ -1,50 +1,92 @@
 import { useSyncExternalStore } from 'react'
+import { api } from './api'
 
-export type Employee = { id: string; name: string; dailyRate: number }
-
-// DEMO: localStorage. Sa Laravel step: papalitan ng API/database.
-const KEY = 'employees'
-
-const load = (): Employee[] => {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '[]')
-  } catch {
-    return []
-  }
+export type Employee = {
+  id: string
+  employeeNo: string
+  name: string
+  email: string | null
+  phone: string | null
+  positionId: string
+  position: string
+  department: string
+  salaryGrade: string
+  baseSalary: number
+  dailyRate: number
+  status: string
+  employmentType: string
+  civilStatus: string | null
+  dateHired: string // YYYY-MM-DD
 }
 
-let employees: Employee[] = load()
+export type Position = {
+  id: string
+  name: string
+  department: string
+  salaryGrade: string
+  monthlySalary: number
+}
+
+export type EmployeeInput = {
+  name: string
+  email?: string | null
+  phone?: string | null
+  positionId: string
+  status?: string
+  employmentType?: string
+  civilStatus?: string | null
+  dateHired: string
+}
+
+let employees: Employee[] = []
+let positions: Position[] = []
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
-
-window.addEventListener('storage', (e) => {
-  if (e.key === KEY || e.key === null) {
-    employees = load()
-    emit()
-  }
-})
-
-const commit = (next: Employee[]) => {
-  employees = next
-  try {
-    localStorage.setItem(KEY, JSON.stringify(employees))
-  } catch {
-    /* ignore */
-  }
-  emit()
-}
 
 const subscribe = (l: () => void) => {
   listeners.add(l)
   return () => listeners.delete(l)
 }
 
+export const refreshEmployees = async () => {
+  employees = await api<Employee[]>('/employees')
+  emit()
+}
+
+export const refreshPositions = async () => {
+  positions = await api<Position[]>('/positions')
+  emit()
+}
+
+// Unang load pagbukas ng app
+refreshEmployees().catch(console.error)
+refreshPositions().catch(console.error)
+
 export const useEmployees = () => useSyncExternalStore(subscribe, () => employees)
+export const usePositions = () => useSyncExternalStore(subscribe, () => positions)
 
-export const addEmployee = (name: string, dailyRate: number) =>
-  commit([...employees, { id: crypto.randomUUID(), name, dailyRate }])
+export async function addEmployee(input: EmployeeInput) {
+  const created = await api<Employee>('/employees', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  })
+  employees = [...employees, created]
+  emit()
+  return created
+}
 
-export const updateEmployee = (id: string, patch: Partial<Omit<Employee, 'id'>>) =>
-  commit(employees.map((e) => (e.id === id ? { ...e, ...patch } : e)))
+export async function updateEmployee(id: string, patch: Partial<EmployeeInput>) {
+  const updated = await api<Employee>(`/employees/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(patch),
+  })
+  employees = employees.map((e) => (e.id === id ? updated : e))
+  emit()
+  return updated
+}
 
-export const removeEmployee = (id: string) => commit(employees.filter((e) => e.id !== id))
+export async function removeEmployee(id: string) {
+  await api<void>(`/employees/${id}`, { method: 'DELETE' })
+  employees = employees.filter((e) => e.id !== id)
+  emit()
+}

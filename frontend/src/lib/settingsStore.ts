@@ -1,14 +1,15 @@
 import { useSyncExternalStore } from 'react'
+import { api } from './api'
 
 export type PayrollSettings = {
   shiftStart: string // HH:mm
   shiftEnd: string // HH:mm
   paidHoursPerDay: number
   overtimeMultiplier: number
-  roundingMinutes: number // 60 = round up sa oras, 1 = eksaktong minuto
+  roundingMinutes: number // 60 = round up to the hour, 1 = exact minutes
 }
 
-// Starting values lang ito. Mababago sa Payroll Settings page.
+// Fallback values used until the API responds.
 export const DEFAULT_SETTINGS: PayrollSettings = {
   shiftStart: '08:00',
   shiftEnd: '17:00',
@@ -17,41 +18,41 @@ export const DEFAULT_SETTINGS: PayrollSettings = {
   roundingMinutes: 60,
 }
 
-// DEMO: localStorage. Sa Laravel step: papalitan ng API/database.
-const KEY = 'payroll-settings'
-
-const load = (): PayrollSettings => {
-  try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }
-  } catch {
-    return DEFAULT_SETTINGS
-  }
-}
-
-let settings = load()
+let settings: PayrollSettings = DEFAULT_SETTINGS
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
-
-window.addEventListener('storage', (e) => {
-  if (e.key === KEY || e.key === null) {
-    settings = load()
-    emit()
-  }
-})
 
 const subscribe = (l: () => void) => {
   listeners.add(l)
   return () => listeners.delete(l)
 }
 
+export const refreshSettings = async () => {
+  settings = { ...DEFAULT_SETTINGS, ...(await api<PayrollSettings>('/settings')) }
+  emit()
+}
+
+// Initial load when the app opens
+refreshSettings().catch(console.error)
+
 export const useSettings = () => useSyncExternalStore(subscribe, () => settings)
 
-export function updateSettings(patch: Partial<PayrollSettings>) {
+// Updates the screen immediately, then saves to the API.
+// If the API rejects the change, the previous values are restored.
+export async function updateSettings(patch: Partial<PayrollSettings>) {
+  const previous = settings
   settings = { ...settings, ...patch }
+  emit()
+
   try {
-    localStorage.setItem(KEY, JSON.stringify(settings))
-  } catch {
-    /* ignore */
+    const saved = await api<PayrollSettings>('/settings', {
+      method: 'PUT',
+      body: JSON.stringify(patch),
+    })
+    settings = { ...DEFAULT_SETTINGS, ...saved }
+  } catch (err) {
+    console.error(err)
+    settings = previous
   }
   emit()
 }

@@ -10,8 +10,7 @@ class EmployeeController extends Controller
 {
     private function format(Employee $e): array
     {
-        $e->loadMissing('position.salaryGrade');
-
+      $e->loadMissing('position');
         return [
             'id' => $e->id,
             'employeeNo' => $e->employee_no,
@@ -21,7 +20,7 @@ class EmployeeController extends Controller
             'positionId' => $e->position_id,
             'position' => $e->position->name,
             'department' => $e->position->department,
-            'salaryGrade' => $e->position->salaryGrade->code,
+         'salaryGrade' => $e->position->grade_code,
             'baseSalary' => $e->base_salary,
             'dailyRate' => $e->daily_rate,
             'status' => $e->status,
@@ -42,7 +41,7 @@ class EmployeeController extends Controller
 
     public function index()
     {
-        return Employee::with('position.salaryGrade')
+     return Employee::with('position')
             ->orderBy('employee_no')
             ->get()
             ->map(fn ($e) => $this->format($e));
@@ -110,7 +109,7 @@ class EmployeeController extends Controller
         $employee->unsetRelation('position');
 
         return $this->format($employee);
-    }
+    }format()
 
     public function destroy(Employee $employee)
     {
