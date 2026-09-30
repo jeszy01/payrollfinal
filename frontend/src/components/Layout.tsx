@@ -9,6 +9,10 @@ const titles: Record<string, [string, string]> = {
   '/audit-logs': ['Logs & audit', 'System activity trail'],
   '/settings': ['User & account settings', 'Manage your account'],
   '/payroll/settings': ['Payroll Settings', 'Shift, overtime, and rounding rules'],
+  '/employees': ['Employee Data', 'Manage employee records'],
+'/attendance': ['Attendance', 'Time in and time out'],
+'/compensation/grades': ['Salary Grades', 'Define and manage compensation structures across departments.'],
+'/compensation/adjustments': ['Adjustment Requests', 'Salary changes and promotions'],
 }
 
 // Pangalan ng group sa sidebar, para sa breadcrumb
@@ -18,6 +22,10 @@ const groups: Record<string, string> = {
   '/payroll/settings': 'Payroll',
   '/audit-logs': 'Insights',
   '/settings': 'Insights',
+  '/employees': 'Workspace',
+'/attendance': 'Payroll',
+'/compensation/grades': 'Compensation',
+'/compensation/adjustments': 'Compensation',
 }
 
 export default function Layout() {

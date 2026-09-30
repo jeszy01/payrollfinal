@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Check, Clock, DollarSign, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { useAdjustments } from '../lib/adjustmentStore'
 import {
   addPosition,
   removePosition,
@@ -48,6 +49,11 @@ const emptyForm: Form = { grade: '', department: '', name: '', salary: '' }
 
 export default function SalaryGrades() {
   const positions = usePositions()
+  const adjustments = useAdjustments()
+const pending = adjustments.filter((a) => a.status === 'pending').length
+const implemented = adjustments.filter(
+  (a) => a.status === 'approved' && a.decidedAt?.startsWith(String(new Date().getFullYear()))
+).length
   const departments = [...new Set(positions.map((p) => p.department))].sort()
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -114,8 +120,8 @@ export default function SalaryGrades() {
 
       <div className="mb-7 grid gap-5 md:grid-cols-3">
         <StatCard icon={<DollarSign size={20} />} tone="blue" label="Salary Grades" value={positions.length} note="Active grades" />
-        <StatCard icon={<Clock size={20} />} tone="orange" label="Pending Adjustments" value={0} note="Awaiting approval" pill="All clear" />
-        <StatCard icon={<Check size={20} />} tone="green" label="Implemented (YTD)" value={0} note="Salary changes applied" pill="—" />
+        <StatCard icon={<Clock size={20} />} tone="orange" label="Pending Adjustments" value={pending} note="Awaiting approval" pill="All clear" />
+        <StatCard icon={<Check size={20} />} tone="green" label="Implemented (YTD)" value={implemented} note="Salary changes applied" pill="—" />
       </div>
 
       <div className="card overflow-x-auto">
