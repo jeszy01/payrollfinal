@@ -90,3 +90,29 @@ export async function removeEmployee(id: string) {
   employees = employees.filter((e) => e.id !== id)
   emit()
 }
+
+export type PositionInput = {
+  name: string
+  department: string
+  salaryGrade: string
+  monthlySalary: number
+}
+
+export async function addPosition(input: PositionInput) {
+  const created = await api<Position>('/positions', { method: 'POST', body: JSON.stringify(input) })
+  positions = [...positions, created]
+  emit()
+}
+
+export async function updatePosition(id: string, patch: Partial<PositionInput>) {
+  const updated = await api<Position>(`/positions/${id}`, { method: 'PUT', body: JSON.stringify(patch) })
+  positions = positions.map((p) => (p.id === id ? updated : p))
+  emit()
+  await refreshEmployees() // salaries of employees in this position change
+}
+
+export async function removePosition(id: string) {
+  await api<void>(`/positions/${id}`, { method: 'DELETE' })
+  positions = positions.filter((p) => p.id !== id)
+  emit()
+}

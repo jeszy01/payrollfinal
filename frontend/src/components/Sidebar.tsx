@@ -1,18 +1,37 @@
 import { useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight, Users } from 'lucide-react'
+import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight, TrendingUp, Users } from 'lucide-react'
 
 type Props = { collapsed: boolean; onToggle: () => void }
 
-const subLinks = [
-  ['/payroll/runs', 'Payroll Runs'],
-  ['/payroll/settings', 'Payroll Settings'],
+const groups = [
+  {
+    key: 'payroll',
+    label: 'Payroll',
+    icon: Banknote,
+    base: '/payroll',
+    links: [
+      ['/payroll/runs', 'Payroll Runs'],
+      ['/payroll/settings', 'Payroll Settings'],
+    ],
+  },
+  {
+    key: 'compensation',
+    label: 'Compensation',
+    icon: TrendingUp,
+    base: '/compensation',
+    links: [
+      ['/compensation/grades', 'Salary Grades'],
+      ['/compensation/adjustments', 'Adjustment Requests'],
+    ],
+  },
 ]
 
 export default function Sidebar({ collapsed, onToggle }: Props) {
   const { pathname } = useLocation()
-  const [open, setOpen] = useState(pathname.startsWith('/payroll'))
-  const inPayroll = pathname.startsWith('/payroll')
+  const [open, setOpen] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(groups.map((g) => [g.key, pathname.startsWith(g.base)]))
+  )
 
   return (
     <aside
@@ -21,7 +40,6 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
       }`}
     >
       <Link to="/" className="flex items-center gap-2.5 px-5 py-6">
-        {/* Palitan ng totoong logo: ilagay sa public/logo.png at gamitin <img src="/logo.png" /> */}
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="shrink-0">
           <ellipse cx="20" cy="20" rx="16" ry="6" stroke="#f59e0b" strokeWidth="2" />
           <ellipse cx="20" cy="20" rx="16" ry="6" stroke="#a855f7" strokeWidth="2" transform="rotate(60 20 20)" />
@@ -37,41 +55,10 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
       </Link>
 
       <nav className="flex-1 px-3 py-2">
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className={`flex w-full items-center gap-3 rounded-lg p-3 text-[15px] font-medium hover:bg-[#2f5fe0] ${
-            inPayroll ? 'bg-[#2f5fe0]' : ''
-          }`}
-        >
-          <Banknote size={18} />
-          {!collapsed && (
-            <>
-              <span>Payroll</span>
-              <ChevronDown size={16} className={`ml-auto transition-transform ${open ? 'rotate-180' : ''}`} />
-            </>
-          )}
-        </button>
-
-        {open &&
-          !collapsed &&
-          subLinks.map(([to, label]) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `ml-6 mt-1.5 block rounded-lg px-3.5 py-2.5 text-sm font-medium hover:bg-[#3b6cf0] hover:text-white ${
-                  isActive ? 'bg-[#3b6cf0] text-white' : 'text-[#dbe4ff]'
-                }`
-              }
-            >
-              {label}
-            </NavLink>
-          ))}
-
-        <NavLink
+         <NavLink
           to="/employees"
           className={({ isActive }) =>
-            `mt-1.5 flex items-center gap-3 rounded-lg p-3 text-[15px] font-medium hover:bg-[#2f5fe0] ${
+            `flex items-center gap-3 rounded-lg p-3 text-[15px] font-medium hover:bg-[#2f5fe0] ${
               isActive ? 'bg-[#2f5fe0]' : ''
             }`
           }
@@ -79,7 +66,47 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
           <Users size={18} />
           {!collapsed && <span>Employee Data</span>}
         </NavLink>
-      </nav>
+        {groups.map((g) => {
+          const Icon = g.icon
+          const active = pathname.startsWith(g.base)
+          const isOpen = open[g.key]
+          return (
+            <div key={g.key} className="mb-1.5">
+              <button
+                onClick={() => setOpen((o) => ({ ...o, [g.key]: !o[g.key] }))}
+                className={`flex w-full items-center gap-3 rounded-lg p-3 text-[15px] font-medium hover:bg-[#2f5fe0] ${
+                  active ? 'bg-[#2f5fe0]' : ''
+                }`}
+              >
+                <Icon size={18} />
+                {!collapsed && (
+                  <>
+                    <span>{g.label}</span>
+                    <ChevronDown size={16} className={`ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  </>
+                )}
+              </button>
+
+              {isOpen &&
+                !collapsed &&
+                g.links.map(([to, label]) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      `ml-6 mt-1.5 block rounded-lg px-3.5 py-2.5 text-sm font-medium hover:bg-[#3b6cf0] hover:text-white ${
+                        isActive ? 'bg-[#3b6cf0] text-white' : 'text-[#dbe4ff]'
+                      }`
+                    }
+                  >
+                    {label}
+                  </NavLink>
+                ))}
+            </div>
+          )
+        })}
+</nav>
+       
 
       <div className={`flex items-center gap-2.5 border-t border-white/15 p-4 ${collapsed ? 'flex-col' : ''}`}>
         <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#2f5fe0] font-semibold">A</div>

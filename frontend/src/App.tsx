@@ -6,7 +6,7 @@ import Placeholder from './pages/Placeholder'
 import PayrollSettings from './pages/PayrollSettings'
 import EmployeeData from './pages/EmployeeData'
 import Attendance from './pages/Attendance'
-
+import SalaryGrades from './pages/SalaryGrades'
 export default function App() {
   return (
     <Routes>
@@ -18,6 +18,8 @@ export default function App() {
         <Route path="/payroll/settings" element={<PayrollSettings />} />
         <Route path="/audit-logs" element={<Placeholder title="Logs & audit" subtitle="System activity trail" />} />
         <Route path="/settings" element={<Placeholder title="User & account settings" subtitle="Manage your account" />} />
+        <Route path="/compensation/grades" element={<SalaryGrades />} />
+<Route path="/compensation/adjustments" element={<Placeholder title="Adjustment Requests" subtitle="Salary changes and promotions" />} />
       </Route>
     </Routes>
   )
