@@ -8,12 +8,13 @@ const titles: Record<string, [string, string]> = {
   '/': ['Dashboard', 'Overview'],
   '/payroll/runs': ['Payroll Management', 'Compute payroll and review payslips'],
   '/audit-logs': ['Logs & audit', 'System activity trail'],
-  '/settings': ['User & account settings', 'Manage your account'],
+  '/settings': ['User Management', 'Accounts that can sign in to this system'],
   '/payroll/settings': ['Payroll Settings', 'Shift, overtime, and rounding rules'],
   '/employees': ['Employee Data', 'Manage employee records'],
 '/attendance': ['Attendance', 'Time in and time out'],
 '/compensation/grades': ['Salary Grades', 'Define and manage compensation structures across departments.'],
 '/compensation/adjustments': ['Adjustment Requests', 'Salary changes and promotions'],
+
 }
 
 // Pangalan ng group sa sidebar, para sa breadcrumb

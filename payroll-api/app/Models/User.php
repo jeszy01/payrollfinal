@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -31,20 +32,28 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    'password',
+    'remember_token',
+    'otp_code',
+];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+protected function casts(): array
+{
+    return [
+        'email_verified_at' => 'datetime',
+        'otp_expires_at' => 'datetime',
+        'otp_sent_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+}
+
+    public function isAdmin(): bool
+{
+    return $this->role === 'admin';
+}
+
+public function isHr(): bool
+{
+    return $this->role === 'hr';
+}
 }

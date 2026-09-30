@@ -10,13 +10,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceEventController;
 use App\Http\Middleware\ApiKey;
 use App\Http\Controllers\PayrollRunController;
+use App\Http\Controllers\UserController;
+use App\Http\Middleware\EnsureRole;
 
-Route::get('/health', fn () => ['status' => 'ok']);
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::get('/health', fn () => ['status' => 'ok']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
-Route::post('/attendance-events', [AttendanceEventController::class, 'store'])
+    Route::post('/attendance-events', [AttendanceEventController::class, 'store'])
     ->middleware([ApiKey::class, 'throttle:120,1']);
-Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -36,4 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/payroll-runs', [PayrollRunController::class, 'index']);
     Route::post('/payroll-runs', [PayrollRunController::class, 'store']);
     Route::get('/payroll-runs/{payrollRun}', [PayrollRunController::class, 'show']);
+
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
+    Route::middleware(EnsureRole::class . ':admin')->group(function () {
+    Route::apiResource('users', UserController::class)->except(['show']);
+});
 });

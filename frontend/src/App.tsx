@@ -10,6 +10,7 @@ import SalaryGrades from './pages/SalaryGrades'
 import Adjustments from './pages/Adjustments'
 import Login from './pages/Login'
 import { isLoggedIn } from './lib/auth'
+import UserManagement from './pages/UserManagement'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   return isLoggedIn() ? children : <Navigate to="/login" replace />
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/settings" element={<Placeholder title="User & account settings" subtitle="Manage your account" />} />
         <Route path="/compensation/grades" element={<SalaryGrades />} />
         <Route path="/compensation/adjustments" element={<Adjustments />} />
+        <Route path="/settings" element={<UserManagement />} />
       </Route>
     </Routes>
   )

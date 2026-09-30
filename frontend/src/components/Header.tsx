@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Bell, ChevronDown, LogOut, Moon, ScrollText, Search, Sun, UserCog } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { logout } from '../lib/auth'
+import { currentUser, logout } from '../lib/auth'
 
 type Props = { dark: boolean; onToggleTheme: () => void }
 
@@ -12,6 +12,10 @@ export default function Header({ dark, onToggleTheme }: Props) {
   const [menu, setMenu] = useState(false)
   const navigate = useNavigate()
   const ref = useRef<HTMLDivElement>(null)
+
+  const me = currentUser()
+  const name = me?.name ?? 'User'
+  const role = me?.role === 'hr' ? 'HR Staff' : 'Admin'
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -42,11 +46,11 @@ export default function Header({ dark, onToggleTheme }: Props) {
         <div className="relative" ref={ref}>
           <button className="hd-admin" onClick={() => setMenu((m) => !m)}>
             <div className="grid size-10 place-items-center rounded-full bg-[var(--brand)] text-sm font-bold text-white">
-              A
+              {name[0]?.toUpperCase()}
             </div>
             <div className="flex flex-col text-left leading-tight">
-              <strong className="text-sm">Admin</strong>
-              <span className="text-xs text-[var(--muted)]">Admin</span>
+              <strong className="text-sm">{name}</strong>
+              <span className="text-xs text-[var(--muted)]">{role}</span>
             </div>
             <ChevronDown size={16} className="text-[var(--muted)]" />
           </button>
@@ -54,21 +58,23 @@ export default function Header({ dark, onToggleTheme }: Props) {
           {menu && (
             <div className="card absolute right-0 top-[calc(100%+8px)] z-50 w-64 p-2">
               <div className="flex flex-col border-b px-3 py-2.5" style={{ borderColor: 'var(--line)' }}>
-                <strong className="text-sm">Admin</strong>
-                <span className="text-xs text-[var(--muted)]">Admin</span>
+                <strong className="text-sm">{name}</strong>
+                <span className="text-xs text-[var(--muted)]">{role}</span>
               </div>
-              <Link to="/settings" className={menuItem} onClick={() => setMenu(false)}>
-                <UserCog size={16} /> User &amp; account settings
-              </Link>
+              {me?.role === 'admin' && (
+                <Link to="/settings" className={menuItem} onClick={() => setMenu(false)}>
+                  <UserCog size={16} /> User &amp; account settings
+                </Link>
+              )}
               <Link to="/audit-logs" className={menuItem} onClick={() => setMenu(false)}>
                 <ScrollText size={16} /> Logs &amp; audit
               </Link>
               <button
                 className={`${menuItem} text-red-500`}
                 onClick={async () => {
-  await logout()
-  navigate('/login', { replace: true })
-}}
+                  await logout()
+                  navigate('/login', { replace: true })
+                }}
               >
                 <LogOut size={16} /> Sign out
               </button>

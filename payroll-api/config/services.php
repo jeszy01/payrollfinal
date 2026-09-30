@@ -37,4 +37,10 @@ return [
 
     'attendance' => ['key' => env('ATTENDANCE_API_KEY')],
 
+    'resend' => [
+    'key' => env('RESEND_API_KEY'),
+    'from' => env('RESEND_FROM', 'onboarding@resend.dev'),
+    'keys' => json_decode(env('RESEND_KEYS', '{}'), true) ?: [],
+],
+'otp_enabled' => env('OTP_ENABLED', false),
 ];
