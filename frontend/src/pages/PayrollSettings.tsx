@@ -15,7 +15,10 @@ export default function PayrollSettings() {
   const s = useSettings()
 
   // Numbers: nagse-save pag umalis sa field (onBlur) at kung valid lang.
-  const num = (key: 'paidHoursPerDay' | 'overtimeMultiplier', step: string) => (
+    const num = (
+    key: 'paidHoursPerDay' | 'overtimeMultiplier' | 'workingDaysPerMonth' | 'cutoffDay',
+    step: string
+  ) => (
     <input
       key={s[key]}
       className={input}
@@ -53,10 +56,10 @@ export default function PayrollSettings() {
             <option value={1}>Eksaktong minuto</option>
           </select>
         </Field>
+        <Field label="Working days per month">{num('workingDaysPerMonth', '1')}</Field>
+        <Field label="Cutoff day (hal. 15 = 1–15 at 16–katapusan)">{num('cutoffDay', '1')}</Field>
       </div>
-      <p className="mt-3 text-xs text-slate-500">
-        Awtomatikong nase-save. Ang pagbabago ay para sa susunod na time in lang; hindi nagbabago ang mga nakaraang araw.
-      </p>
+      <p className="mt-3 text-xs text-slate-500"></p>
     </>
   )
 }
