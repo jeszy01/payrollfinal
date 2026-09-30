@@ -7,10 +7,14 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AttendanceEventController;
+use App\Http\Middleware\ApiKey;
 
 Route::get('/health', fn () => ['status' => 'ok']);
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
+Route::post('/attendance-events', [AttendanceEventController::class, 'store'])
+    ->middleware([ApiKey::class, 'throttle:120,1']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);

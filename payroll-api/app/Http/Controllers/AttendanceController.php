@@ -36,7 +36,7 @@ class AttendanceController extends Controller
         return $query->get()->map(fn ($r) => $this->format($r));
     }
 
-    /** Insert o i-update ang record (isa kada employee kada araw). */
+    /** Insert or update the record (one per employee per day). */
     public function upsert(Request $request)
     {
         $data = $request->validate([
@@ -48,15 +48,17 @@ class AttendanceController extends Controller
             'archived' => 'sometimes|boolean',
         ]);
 
-        $employee = Employee::with('position.salaryGrade')->findOrFail($data['employeeId']);
+        $employee = Employee::with('position')->findOrFail($data['employeeId']);
 
         $record = AttendanceRecord::firstOrNew([
             'employee_id' => $employee->id,
             'date' => $data['date'],
         ]);
 
-        // Snapshot: sine-save lang kapag bagong record, kaya hindi na nababago pagkatapos.
-        if (! $record->exists) {
+        $wasNew = ! $record->exists;
+
+        // Snapshot: saved only for a new record, so past days never change.
+        if ($wasNew) {
             $record->employee_name = $employee->name;
             $record->daily_rate = $employee->daily_rate;
             $record->rules = PayrollSetting::current()->toRules();
@@ -75,7 +77,6 @@ class AttendanceController extends Controller
             }
         }
 
-        $wasNew = ! $record->exists;
         $record->save();
 
         return response()->json($this->format($record), $wasNew ? 201 : 200);

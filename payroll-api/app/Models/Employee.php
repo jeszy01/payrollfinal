@@ -10,7 +10,6 @@ class Employee extends Model
 {
     use HasUuids;
 
-    public const WORKING_DAYS_PER_MONTH = 22;
 
     protected $fillable = [
         'employee_no', 'name', 'email', 'phone', 'position_id',
@@ -29,8 +28,8 @@ class Employee extends Model
         return (float) $this->position->monthly_salary;
     }
 
-    public function getDailyRateAttribute(): float
-    {
-        return round($this->base_salary / self::WORKING_DAYS_PER_MONTH, 2);
-    }
+  public function getDailyRateAttribute(): float
+{
+    return round($this->base_salary / PayrollSetting::current()->working_days_per_month, 2);
+}
 }

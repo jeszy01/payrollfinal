@@ -35,4 +35,6 @@ return [
         ],
     ],
 
+    'attendance' => ['key' => env('ATTENDANCE_API_KEY')],
+
 ];
