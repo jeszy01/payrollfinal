@@ -109,7 +109,7 @@ class EmployeeController extends Controller
         $employee->unsetRelation('position');
 
         return $this->format($employee);
-    }format()
+    }
 
     public function destroy(Employee $employee)
     {
