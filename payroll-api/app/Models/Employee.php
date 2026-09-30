@@ -26,7 +26,7 @@ class Employee extends Model
 
     public function getBaseSalaryAttribute(): float
     {
-        return (float) $this->position->salaryGrade->monthly_salary;
+        return (float) $this->position->monthly_salary;
     }
 
     public function getDailyRateAttribute(): float
