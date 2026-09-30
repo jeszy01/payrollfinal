@@ -99,6 +99,9 @@ export default function UserManagement() {
                 </td>
               </tr>
             ))}
+            {users.length === 0 && (
+  <tr><td colSpan={5} className="text-center text-[var(--muted)]">No users yet.</td></tr>
+)}
           </tbody>
         </table>
       </div>

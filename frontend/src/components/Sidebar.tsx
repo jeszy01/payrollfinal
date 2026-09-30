@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight, TrendingUp, Users } from 'lucide-react'
+import { currentUser } from '../lib/auth'
 
 type Props = { collapsed: boolean; onToggle: () => void }
 
@@ -32,6 +33,9 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(groups.map((g) => [g.key, pathname.startsWith(g.base)]))
   )
+  const me = currentUser()
+  const name = me?.name ?? 'User'
+  const role = me?.role === 'admin' ? 'Admin' : 'HR Staff'
 
   return (
     <aside
@@ -121,15 +125,15 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
           collapsed ? 'flex-col' : ''
         }`}
       >
-        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#4a7bff] to-[#2b4fd0] font-bold">
-          A
-        </div>
-        {!collapsed && (
-          <div className="flex flex-col text-left leading-tight">
-            <strong className="text-sm">Admin</strong>
-            <span className="text-xs text-white/65">Admin</span>
-          </div>
-        )}
+<div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#4a7bff] to-[#2b4fd0] font-bold">
+  {name.charAt(0).toUpperCase()}
+</div>
+{!collapsed && (
+  <div className="flex min-w-0 flex-col text-left leading-tight">
+    <strong className="truncate text-sm">{name}</strong>
+    <span className="text-xs text-white/65">{role}</span>
+  </div>
+)}
         <button
           onClick={onToggle}
           aria-label="Toggle sidebar"
