@@ -265,7 +265,7 @@ export default function Payroll() {
           </span>
         )}
 
-        <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2">
           {showLive && !review && (
             <button className="btn-primary" disabled={busy || rows.length === 0} onClick={() => setReview(true)}>
               Generate Payroll
@@ -428,7 +428,7 @@ export default function Payroll() {
               Delete
             </button>
           )}
-          {tab === 'active' && <CutoffClock cutoff={current.label} />}
+         {tab === 'active' && <CutoffClock cutoff={current.label} />}
         </div>
       </div>
 
