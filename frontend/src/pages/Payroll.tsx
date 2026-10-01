@@ -23,7 +23,7 @@ const hrs = (mins: number) => {
   return [h && `${h} hr`, m && `${m} min`].filter(Boolean).join(' ')
 }
 const m = (v: number) => (v ? peso(v) : '—')
-const n = (v?: number) => v ?? 0
+const n = (v?: number | string | null) => Number(v ?? 0)
 const label = (r: PayrollRun) => `${r.periodStart} to ${r.periodEnd}`
 
 const badgeStyle: Record<string, string> = {

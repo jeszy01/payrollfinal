@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight, TrendingUp, Users } from 'lucide-react'
+import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight, HeartPulse, TrendingUp, Users } from 'lucide-react'
 import { currentUser } from '../lib/auth'
 
 type Props = { collapsed: boolean; onToggle: () => void }
@@ -23,7 +23,20 @@ const groups = [
     base: '/compensation',
     links: [
       ['/compensation/grades', 'Salary Grades'],
-      ['/compensation/adjustments', 'Adjustment Requests'],
+          ['/compensation/adjustments', 'Adjustment Requests'],
+    ],
+  },
+  {
+    key: 'benefits',
+    label: 'HMO & Benefits',
+    icon: HeartPulse,
+    base: '/benefits',
+    links: [
+      ['/benefits/government', 'Government Contributions'],
+      ['/benefits/hmo', 'HMO Plans'],
+      ['/benefits/company', 'Company Benefits'],
+      ['/benefits/enrollments', 'Enrollments'],
+      ['/benefits/loans', 'Loans & Advances'],
     ],
   },
 ]

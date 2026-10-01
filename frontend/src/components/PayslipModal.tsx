@@ -54,7 +54,7 @@ export default function PayslipModal({ slip, periodStart, periodEnd, onClose }: 
   const empNo = slip.employeeNo ?? employees.find((e) => e.id === slip.employeeId)?.employeeNo ?? '—'
   const period = `${fmtDate(periodStart)} to ${fmtDate(periodEnd)}`
 
-  const n = (v: number | undefined) => v ?? 0
+ const n = (v?: number | string | null) => Number(v ?? 0)
   const totalSalary = n(slip.gross) + n(slip.slCashConversion) + n(slip.overtimePay) - n(slip.deduction)
   const netSalary =
     totalSalary - n(slip.sss) - n(slip.philhealth) - n(slip.pagIbig) -
