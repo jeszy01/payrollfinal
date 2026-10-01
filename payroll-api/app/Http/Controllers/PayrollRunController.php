@@ -63,14 +63,13 @@ class PayrollRunController extends Controller
         return $this->format($payrollRun->load('payslips'));
     }
 
-    public function store(Request $request)
+      public function store(Request $request)
     {
         $data = $request->validate([
             'periodStart' => 'required|date_format:Y-m-d',
             'periodEnd' => 'required|date_format:Y-m-d|after_or_equal:periodStart',
         ]);
 
-        // Any overlap, not just an exact match
         if (PayrollRun::where('period_start', '<=', $data['periodEnd'])
             ->where('period_end', '>=', $data['periodStart'])->exists()) {
             return response()->json(['message' => 'This period overlaps an existing payroll run.'], 422);
@@ -78,7 +77,6 @@ class PayrollRunController extends Controller
 
         $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])->get();
 
-        // Timed in but not timed out yet
         $open = $records->filter(fn ($r) => DayCalculator::compute($r)['status'] === 'working')->count();
         if ($open > 0) {
             return response()->json([
@@ -95,12 +93,12 @@ class PayrollRunController extends Controller
                 'status' => 'draft',
             ]);
 
-                $rates = ContributionCalculator::rates();
+            $rates = ContributionCalculator::rates();
             $enrollments = Enrollment::with(['hmoPlan', 'companyBenefit'])->get()->groupBy('employee_id');
             $loans = EmployeeLoan::where('balance', '>', 0)
                 ->where('start_date', '<=', $data['periodEnd'])->get()->groupBy('employee_id');
 
-            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($runuse ($run, $byEmployee, $rates, $enrollments, $loans) {
+            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates, $enrollments, $loans) {
                 $s = ['days' => 0, 'late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0, 'gross' => 0.0, 'deduction' => 0.0, 'otPay' => 0.0];
 
                 foreach ($byEmployee->get($emp->id, collect()) as $r) {
@@ -118,11 +116,12 @@ class PayrollRunController extends Controller
                 }
 
                 $total = round(max(0, $s['gross'] - $s['deduction']) + $s['otPay'], 2);
+
                 $monthly = (float) ($emp->position->monthly_salary ?? 0);
                 $sss = round(ContributionCalculator::employee($monthly, $rates['sss'] ?? null) / 2, 2);
                 $philhealth = round(ContributionCalculator::employee($monthly, $rates['philhealth'] ?? null) / 2, 2);
                 $pagIbig = round(ContributionCalculator::employee($monthly, $rates['pagibig'] ?? null) / 2, 2);
-                                $claims = 0; // next step
+                $claims = 0; // next step
 
                 $hmo = 0.0;
                 $allow = ['transport_allowance' => 0.0, 'rice_allowance' => 0.0];
@@ -167,7 +166,7 @@ class PayrollRunController extends Controller
                     'hdmf_loan' => round($loanTotals['hdmf_loan'], 2),
                     'cash_advance' => round($loanTotals['cash_advance'], 2),
                     'claims' => $claims,
-                    'net_pay' => round($total -                     'net_pay' => round(
+                    'net_pay' => round(
                         $total + $allow['transport_allowance'] + $allow['rice_allowance']
                         - $sss - $philhealth - $pagIbig - $hmo - array_sum($loanTotals) - $claims,
                         2
@@ -198,7 +197,7 @@ class PayrollRunController extends Controller
         if ($payrollRun->status !== 'approved') {
             return response()->json(['message' => 'Approve the payroll before releasing it.'], 422);
         }
-               DB::transaction(function () use ($payrollRun) {
+            DB::transaction(function () use ($payrollRun) {
             foreach ($payrollRun->payslips as $p) {
                 EmployeeLoan::where('employee_id', $p->employee_id)
                     ->where('balance', '>', 0)

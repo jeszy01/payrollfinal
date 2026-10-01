@@ -9,6 +9,10 @@ import Attendance from './pages/Attendance'
 import SalaryGrades from './pages/SalaryGrades'
 import Adjustments from './pages/Adjustments'
 import GovernmentContributions from './pages/GovernmentContributions'
+import HmoPlans from './pages/HmoPlans'
+import CompanyBenefits from './pages/CompanyBenefits'
+import Enrollments from './pages/Enrollments'
+import Loans from './pages/Loans'
 import Login from './pages/Login'
 import { isLoggedIn } from './lib/auth'
 import UserManagement from './pages/UserManagement'
@@ -37,10 +41,10 @@ export default function App() {
         <Route path="/compensation/grades" element={<SalaryGrades />} />
         <Route path="/compensation/adjustments" element={<Adjustments />} />
         <Route path="/benefits/government" element={<GovernmentContributions />} />
-        <Route path="/benefits/hmo" element={<Placeholder title="HMO Plans" subtitle="Providers and premiums" />} />
-        <Route path="/benefits/company" element={<Placeholder title="Company Benefits" subtitle="Allowances and other benefits" />} />
-        <Route path="/benefits/enrollments" element={<Placeholder title="Enrollments" subtitle="Employee benefit enrollment" />} />
-        <Route path="/benefits/loans" element={<Placeholder title="Loans & Advances" subtitle="Loans and cash advances" />} />
+        <Route path="/benefits/hmo" element={<HmoPlans />} />
+        <Route path="/benefits/company" element={<CompanyBenefits />} />
+        <Route path="/benefits/enrollments" element={<Enrollments />} />
+        <Route path="/benefits/loans" element={<Loans />} />
         <Route path="/settings" element={<UserManagement />} />
       </Route>
     </Routes>
