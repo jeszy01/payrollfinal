@@ -82,9 +82,12 @@ export default function Login() {
 
         <div>
         <div className="flex flex-col items-center text-center">
-  <div className="grid h-32 w-32 place-items-center rounded-3xl bg-white p-3 shadow-2xl lg:h-40 lg:w-40">
-    <img src="/logo.png" alt="Archon Nell Incorporated" className="h-auto w-full object-contain" />
-  </div>
+ <img
+  src="/logo.png"
+  alt="Archon Nell Incorporated"
+  className="w-56 lg:w-72"
+  style={{ filter: 'drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px #fff)' }}
+/>
   <h2 className="mt-5 text-xl font-extrabold lg:text-2xl">Archon Nell Incorporated</h2>
 </div>
           <ul className="mt-8 hidden space-y-3 lg:block">
