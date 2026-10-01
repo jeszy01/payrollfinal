@@ -4,11 +4,12 @@ import { currentUser } from '../lib/auth'
 import { useEmployees } from '../lib/employeeStore'
 import { computeDay, cutoffOf, peso, todayStr } from '../lib/payroll'
 import {
-  approveRun, generateRun, getRun, listRuns, releaseRun,
+  approveRun, deleteRun, generateRun, getRun, listRuns, releaseRun,
   type PayrollRun, type PayslipRow,
 } from '../lib/payrollRunStore'
 import { useSettings } from '../lib/settingsStore'
 import { useAttendance } from '../lib/useAttendance'
+import CutoffClock from '../components/CutoffClock'
 
 const liveCols = ['Employee', 'Days Worked', 'Late', 'Undertime', 'Overtime', 'Absent', 'Total Salary']
 const summaryCols = [
@@ -165,17 +166,17 @@ export default function Payroll() {
   )
   useEffect(() => { refresh() }, [refresh])
 
-  const currentRun = runs.find((r) => r.periodStart === current.start && r.periodEnd === current.end)
-  const activeRun = currentRun && currentRun.status !== 'released' ? currentRun : undefined
-  const archivedList = runs.filter((r) => r.status === 'released' || r.id !== currentRun?.id)
+    const activeRun = runs.find(
+    (r) => r.periodStart === current.start && r.periodEnd === current.end && r.status !== 'released'
+  )
+  const archivedList = runs.filter((r) => r.id !== activeRun?.id)
 
   const shown = tab === 'active' ? activeRun : (archivedList.find((r) => r.id === picked) ?? archivedList[0])
-  const showLive = tab === 'active' && !currentRun
+  const showLive = tab === 'active' && !activeRun
   const showReview = showLive && review
-  const releasedNote = tab === 'active' && currentRun?.status === 'released'
 
   // Leave the review page once the payroll has been saved
-  useEffect(() => { if (currentRun) setReview(false) }, [currentRun?.id])
+  useEffect(() => { if (activeRun) setReview(false) }, [activeRun?.id])
 
   useEffect(() => {
     if (!shown) { setDetail(null); return }
@@ -207,7 +208,7 @@ export default function Payroll() {
           gross: 0, deduction: 0, otPay: 0, total: 0,
         }
         for (const r of records) {
-          if (r.employeeId !== emp.id || r.date < current.start || r.date > current.end) continue
+                  if (r.employeeId !== emp.id || r.payrollRunId || r.date < current.start || r.date > current.end) continue
           const c = computeDay(r)
           if (c.status !== 'absent') {
             row.days += 1
@@ -226,11 +227,7 @@ export default function Payroll() {
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [employees, records, current.start, current.end])
 
-  const emptyMsg = releasedNote
-    ? 'Payroll for this cutoff is released. See Archived.'
-    : tab === 'archived' && !shown
-      ? 'No archived payroll yet.'
-      : 'Loading...'
+  const emptyMsg = tab === 'archived' && !shown ? 'No archived payroll yet.' : 'Loading...'
 
   return (
     <>
@@ -260,11 +257,7 @@ export default function Payroll() {
               <option key={r.id} value={r.id}>{label(r)} ({r.status})</option>
             ))}
           </select>
-        ) : (
-          <span className="text-sm font-semibold text-[var(--muted)]">
-            {tab === 'active' ? current.label : ''}
-          </span>
-        )}
+              ) : null}
 
         {shown && (
           <span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${badgeStyle[shown.status]}`}>
@@ -345,6 +338,97 @@ export default function Payroll() {
               Export CSV
             </button>
           )}
+                 {isAdmin && shown && (
+            <button
+              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
+              disabled={busy}
+              onClick={() =>
+                setAsk({
+                  title: 'Delete payroll',
+                  message: 'Delete this payroll? Its attendance returns to Active.',
+                  onYes: () => act(() => deleteRun(shown.id)),
+                })
+              }
+            >
+              Delete
+            </button>
+          )}
+                  {isAdmin && shown && (
+            <button
+              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
+              disabled={busy}
+              onClick={() =>
+                setAsk({
+                  title: 'Delete payroll',
+                  message: 'Delete this payroll? Its attendance returns to Active.',
+                  onYes: () => act(() => deleteRun(shown.id)),
+                })
+              }
+            >
+              Delete
+            </button>
+          )}
+                 {isAdmin && shown && (
+            <button
+              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
+              disabled={busy}
+              onClick={() =>
+                setAsk({
+                  title: 'Delete payroll',
+                  message: 'Delete this payroll? Its attendance returns to Active.',
+                  onYes: () => act(() => deleteRun(shown.id)),
+                })
+              }
+            >
+              Delete
+            </button>
+          )}
+                  {isAdmin && shown && (
+            <button
+              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
+              disabled={busy}
+              onClick={() =>
+                setAsk({
+                  title: 'Delete payroll',
+                  message: 'Delete this payroll? Its attendance returns to Active.',
+                  onYes: () => act(() => deleteRun(shown.id)),
+                })
+              }
+            >
+              Delete
+            </button>
+          )}
+                    {isAdmin && shown && (
+            <button
+              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
+              disabled={busy}
+              onClick={() =>
+                setAsk({
+                  title: 'Delete payroll',
+                  message: 'Delete this payroll? Its attendance returns to Active.',
+                  onYes: () => act(() => deleteRun(shown.id)),
+                })
+              }
+            >
+              Delete
+            </button>
+          )}
+            {isAdmin && shown && (
+            <button
+              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
+              disabled={busy}
+              onClick={() =>
+                setAsk({
+                  title: 'Delete payroll',
+                  message: 'Delete this payroll? Its attendance returns to Active.',
+                  onYes: () => act(() => deleteRun(shown.id)),
+                })
+              }
+            >
+              Delete
+            </button>
+          )}
+          {tab === 'active' && <CutoffClock cutoff={current.label} />}
         </div>
       </div>
 

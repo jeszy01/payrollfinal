@@ -43,7 +43,7 @@ export default function PayrollSettings() {
           <input className={input} type="time" value={s.shiftEnd} onChange={(e) => updateSettings({ shiftEnd: e.target.value })} />
         </Field>
         <Field label="Paid hours per day">{num('paidHoursPerDay', '0.5')}</Field>
-        <Field label="Overtime multiplier (hal. 1.25)">{num('overtimeMultiplier', '0.01')}</Field>
+        <Field label="Overtime multiplier">{num('overtimeMultiplier', '0.01')}</Field>
         <Field label="Late / undertime / overtime rounding">
           <select
             className={input}
@@ -57,7 +57,7 @@ export default function PayrollSettings() {
           </select>
         </Field>
         <Field label="Working days per month">{num('workingDaysPerMonth', '1')}</Field>
-        <Field label="Cutoff day (hal. 15 = 1–15 at 16–katapusan)">{num('cutoffDay', '1')}</Field>
+        <Field label="Cutoff day">{num('cutoffDay', '1')}</Field>
       </div>
       <p className="mt-3 text-xs text-slate-500"></p>
     </>
