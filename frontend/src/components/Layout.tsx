@@ -14,6 +14,13 @@ const titles: Record<string, [string, string]> = {
 '/attendance': ['Attendance', 'Time in and time out'],
 '/compensation/grades': ['Salary Grades', 'Define and manage compensation structures across departments.'],
 '/compensation/adjustments': ['Adjustment Requests', 'Salary changes and promotions'],
+'/benefits/government': ['Government Contributions', 'SSS, PhilHealth and Pag-IBIG'],
+'/benefits/hmo': ['HMO Plans', 'Providers and premiums'],
+'/benefits/company': ['Company Benefits', 'Allowances and other benefits'],
+'/benefits/enrollments': ['Enrollments', 'Employee benefit enrollment'],
+'/benefits/loans': ['Loans & Advances', 'Loans and cash advances'],
+'/claims': ['Claims & Reimbursement', 'Submit, approve & track'],
+'/claims/types': ['Claim Types', 'Limits and requirements'],
 
 }
 
@@ -28,6 +35,13 @@ const groups: Record<string, string> = {
 '/attendance': 'Payroll',
 '/compensation/grades': 'Compensation',
 '/compensation/adjustments': 'Compensation',
+'/benefits/government': 'HMO & Benefits',
+'/benefits/hmo': 'HMO & Benefits',
+'/benefits/company': 'HMO & Benefits',
+'/benefits/enrollments': 'HMO & Benefits',
+'/benefits/loans': 'HMO & Benefits',
+'/claims': 'Claims & Reimbursement',
+'/claims/types': 'Claims & Reimbursement',
 }
 
 export default function Layout() {

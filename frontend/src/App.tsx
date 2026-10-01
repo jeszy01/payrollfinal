@@ -13,6 +13,8 @@ import HmoPlans from './pages/HmoPlans'
 import CompanyBenefits from './pages/CompanyBenefits'
 import Enrollments from './pages/Enrollments'
 import Loans from './pages/Loans'
+import Claims from './pages/Claims'
+import ClaimTypes from './pages/ClaimTypes'
 import Login from './pages/Login'
 import { isLoggedIn } from './lib/auth'
 import UserManagement from './pages/UserManagement'
@@ -44,7 +46,9 @@ export default function App() {
         <Route path="/benefits/hmo" element={<HmoPlans />} />
         <Route path="/benefits/company" element={<CompanyBenefits />} />
         <Route path="/benefits/enrollments" element={<Enrollments />} />
-        <Route path="/benefits/loans" element={<Loans />} />
+               <Route path="/benefits/loans" element={<Loans />} />
+        <Route path="/claims" element={<Claims />} />
+        <Route path="/claims/types" element={<ClaimTypes />} />
         <Route path="/settings" element={<UserManagement />} />
       </Route>
     </Routes>

@@ -92,7 +92,7 @@ export default function EmployeeData() {
     )
   }, [employees, search, dept, statusFilter])
 
-  const deptCount = new Set(employees.map((e) => e.department)).size
+ 
   const selectedPosition = positions.find((p) => p.id === form.positionId)
 
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }))
@@ -179,14 +179,7 @@ export default function EmployeeData() {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold">Employee Management</h2>
-          <p className="text-sm text-slate-500">
-            {employees.length} {employees.length === 1 ? 'employee' : 'employees'} across {deptCount}{' '}
-            {deptCount === 1 ? 'department' : 'departments'}
-          </p>
-        </div>
+            <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
         <div className="flex gap-3">
           <button
             onClick={exportCsv}
@@ -204,8 +197,7 @@ export default function EmployeeData() {
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-[#131c2e]">
-        <h3 className="text-sm font-semibold">Employee Directory</h3>
-        <p className="mb-4 text-xs text-slate-500">Manage workforce records</p>
+       
 
         <div className="mb-4 flex flex-wrap gap-3">
           <div className="flex min-w-60 flex-1 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-slate-500 dark:border-slate-700 dark:bg-[#0b1220]">

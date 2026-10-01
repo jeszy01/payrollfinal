@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClaimType;
 use App\Models\CompanyBenefit;
 use App\Models\EmployeeLoan;
 use App\Models\Enrollment;
@@ -31,6 +32,18 @@ class BenefitController extends Controller
                 'kind' => 'required|in:hmo,benefit',
                 'hmo_plan_id' => 'nullable|required_if:kind,hmo|exists:hmo_plans,id',
                 'company_benefit_id' => 'nullable|required_if:kind,benefit|exists:company_benefits,id',
+            ]],
+                       'claim-types' => [ClaimType::class, [
+                'name' => 'required|string|max:100',
+                'max_amount' => 'nullable|numeric|min:0',
+                'deadline_days' => 'nullable|integer|min:0',
+                'receipt_required' => 'required|in:0,1',
+            ]],
+                'claim-types' => [ClaimType::class, [
+                'name' => 'required|string|max:100',
+                'max_amount' => 'nullable|numeric|min:0',
+                'deadline_days' => 'nullable|integer|min:0',
+                'receipt_required' => 'required|in:0,1',
             ]],
             'loans' => [EmployeeLoan::class, [
                 'employee_id' => 'required|exists:employees,id',

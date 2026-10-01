@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight, HeartPulse, TrendingUp, Users } from 'lucide-react'
+import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight,HeartPulse, Receipt, TrendingUp, Users } from 'lucide-react'
 import { currentUser } from '../lib/auth'
 
 type Props = { collapsed: boolean; onToggle: () => void }
@@ -36,7 +36,17 @@ const groups = [
       ['/benefits/hmo', 'HMO Plans'],
       ['/benefits/company', 'Company Benefits'],
       ['/benefits/enrollments', 'Enrollments'],
-      ['/benefits/loans', 'Loans & Advances'],
+          ['/benefits/loans', 'Loans & Advances'],
+    ],
+  },
+  {
+    key: 'claims',
+    label: 'Claims & Reimbursement',
+    icon: Receipt,
+    base: '/claims',
+    links: [
+      ['/claims', 'Claims'],
+      ['/claims/types', 'Claim Types'],
     ],
   },
 ]
@@ -114,6 +124,7 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
                   <NavLink
                     key={to}
                     to={to}
+                    end
                     className={({ isActive }) =>
                       `mt-1 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition hover:bg-white/10 ${
                         isActive ? 'bg-white/15 text-white' : 'text-white/75'

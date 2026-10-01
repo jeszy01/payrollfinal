@@ -268,7 +268,7 @@ export default function Payroll() {
                  <div className="ml-auto flex items-center gap-2">
           {tab === 'active' && <CutoffClock cutoff={current.label} />}
 
-          {isAdmin && shown && (
+                    {isAdmin && shown && shown.status !== 'released' && (
             <button
               className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
               disabled={busy}

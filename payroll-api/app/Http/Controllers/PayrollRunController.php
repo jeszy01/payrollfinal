@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AttendanceRecord;
+use App\Models\Claim;
 use App\Models\Employee;
 use App\Models\EmployeeLoan;
 use App\Models\Enrollment;
@@ -102,10 +103,12 @@ class PayrollRunController extends Controller
 
             $rates = ContributionCalculator::rates();
             $enrollments = Enrollment::with(['hmoPlan', 'companyBenefit'])->get()->groupBy('employee_id');
+            $pendingClaims = Claim::where('status', 'approved')->whereNull('payroll_run_id')->get();
+            $claimsByEmployee = $pendingClaims->groupBy('employee_id');
             $loans = EmployeeLoan::where('balance', '>', 0)
                 ->where('start_date', '<=', $data['periodEnd'])->get()->groupBy('employee_id');
 
-            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates, $enrollments, $loans) {
+            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates, $enrollments, $loans, $claimsByEmployee) {
                 $s = ['days' => 0, 'late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0, 'gross' => 0.0, 'deduction' => 0.0, 'otPay' => 0.0];
 
                 foreach ($byEmployee->get($emp->id, collect()) as $r) {
@@ -128,7 +131,7 @@ class PayrollRunController extends Controller
                 $sss = round(ContributionCalculator::employee($monthly, $rates['sss'] ?? null) / 2, 2);
                 $philhealth = round(ContributionCalculator::employee($monthly, $rates['philhealth'] ?? null) / 2, 2);
                 $pagIbig = round(ContributionCalculator::employee($monthly, $rates['pagibig'] ?? null) / 2, 2);
-                $claims = 0;
+                                $claims = round((float) $claimsByEmployee->get($emp->id, collect())->sum('amount'), 2);
 
                 $hmo = 0.0;
                 $allow = ['transport_allowance' => 0.0, 'rice_allowance' => 0.0];
@@ -175,7 +178,7 @@ class PayrollRunController extends Controller
                     'claims' => $claims,
                     'net_pay' => round(
                         $total + $allow['transport_allowance'] + $allow['rice_allowance']
-                        - $sss - $philhealth - $pagIbig - $hmo - array_sum($loanTotals) - $claims,
+                      - $sss - $philhealth - $pagIbig - $hmo - array_sum($loanTotals) + $claims,
                         2
                     ),
                     'employee_no' => $emp->employee_no,
@@ -184,6 +187,7 @@ class PayrollRunController extends Controller
 
             // Mark attendance as included, so Active resets to zero
             AttendanceRecord::whereIn('id', $records->pluck('id'))->update(['payroll_run_id' => $run->id]);
+            Claim::whereIn('id', $pendingClaims->pluck('id'))->update(['payroll_run_id' => $run->id]);
 
             return $run;
         });
@@ -215,24 +219,25 @@ class PayrollRunController extends Controller
                     ->get()
                     ->each(fn ($l) => $l->update(['balance' => max(0, $l->balance - $l->amortization)]));
             }
+                Claim::where('payroll_run_id', $payrollRun->id)->update([
+                'status' => 'paid',
+                'paid_method' => 'payroll',
+                'paid_at' => now('Asia/Manila')->toDateString(),
+            ]);
             $payrollRun->update(['status' => 'released']);
         });
         return $this->format($payrollRun->load('payslips'));
     }
 
     // any status; attendance returns to Active, loan balances restored if released
-    public function destroy(PayrollRun $payrollRun)
+       public function destroy(PayrollRun $payrollRun)
     {
+        if ($payrollRun->status === 'released') {
+            return response()->json(['message' => 'A released payroll is locked and cannot be deleted.'], 422);
+        }
         DB::transaction(function () use ($payrollRun) {
-            if ($payrollRun->status === 'released') {
-                foreach ($payrollRun->payslips as $p) {
-                    EmployeeLoan::where('employee_id', $p->employee_id)
-                        ->where('start_date', '<=', $payrollRun->period_end)
-                        ->get()
-                        ->each(fn ($l) => $l->update(['balance' => min($l->principal, $l->balance + $l->amortization)]));
-                }
-            }
             AttendanceRecord::where('payroll_run_id', $payrollRun->id)->update(['payroll_run_id' => null]);
+            Claim::where('payroll_run_id', $payrollRun->id)->update(['payroll_run_id' => null]);
             $payrollRun->payslips()->delete();
             $payrollRun->delete();
         });

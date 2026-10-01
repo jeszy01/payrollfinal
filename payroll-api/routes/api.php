@@ -53,7 +53,14 @@ use App\Http\Middleware\EnsureRole;
 });
 
     Route::get('/contribution-rates', [\App\Http\Controllers\ContributionRateController::class, 'index']);
+    Route::get('/claims', [\App\Http\Controllers\ClaimController::class, 'index']);
+    Route::post('/claims', [\App\Http\Controllers\ClaimController::class, 'store']);
+    Route::get('/claims/{claim}/attachment', [\App\Http\Controllers\ClaimController::class, 'attachment']);
+    Route::post('/claims/{claim}/paid', [\App\Http\Controllers\ClaimController::class, 'markPaid']);
+    Route::delete('/claims/{claim}', [\App\Http\Controllers\ClaimController::class, 'destroy']);
     Route::put('/contribution-rates/{type}', [\App\Http\Controllers\ContributionRateController::class, 'update']);
+    Route::post('/claims/{claim}/approve', [\App\Http\Controllers\ClaimController::class, 'approve']);
+    Route::post('/claims/{claim}/reject', [\App\Http\Controllers\ClaimController::class, 'reject']);
 
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
     Route::middleware(EnsureRole::class . ':admin')->group(function () {
