@@ -26,7 +26,11 @@ use App\Http\Middleware\EnsureRole;
     Route::apiResource('employees', EmployeeController::class)->except(['show']);
     Route::get('/settings', [SettingsController::class, 'show']);
     Route::put('/settings', [SettingsController::class, 'update']);
-    Route::get('/contribution-rates', [\App\Http\Controllers\ContributionRateController::class, 'index']);
+        Route::get('/contribution-rates', [\App\Http\Controllers\ContributionRateController::class, 'index']);
+    Route::get('/benefits/{resource}', [\App\Http\Controllers\BenefitController::class, 'index']);
+    Route::post('/benefits/{resource}', [\App\Http\Controllers\BenefitController::class, 'store']);
+    Route::put('/benefits/{resource}/{id}', [\App\Http\Controllers\BenefitController::class, 'update']);
+    Route::delete('/benefits/{resource}/{id}', [\App\Http\Controllers\BenefitController::class, 'destroy']);
 
     Route::get('/attendance', [AttendanceController::class, 'index']);
     Route::put('/attendance', [AttendanceController::class, 'upsert']);

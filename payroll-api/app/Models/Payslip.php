@@ -13,7 +13,7 @@ class Payslip extends Model
    protected $casts = [
     'gross' => 'float', 'deduction' => 'float', 'overtime_pay' => 'float',
     'sss' => 'float', 'pag_ibig' => 'float', 'claims' => 'float', 'net_pay' => 'float',
-    'sl_cash_conversion' => 'float', 'philhealth' => 'float', 'cash_advance' => 'float',
+       'hmo' => 'float', 'sl_cash_conversion' => 'float',
     'sss_loan' => 'float', 'hdmf_loan' => 'float',
     'transport_allowance' => 'float', 'rice_allowance' => 'float',
     'sent_at' => 'datetime',

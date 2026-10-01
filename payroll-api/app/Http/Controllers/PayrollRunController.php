@@ -6,6 +6,8 @@ use App\Models\AttendanceRecord;
 use App\Models\Employee;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
+use App\Models\EmployeeLoan;
+use App\Models\Enrollment;
 use App\Services\ContributionCalculator;
 use App\Services\DayCalculator;
 use Illuminate\Http\Request;
@@ -44,6 +46,7 @@ class PayrollRunController extends Controller
                     'hdmfLoan' => $p->hdmf_loan,
                     'transportAllowance' => $p->transport_allowance,
                     'riceAllowance' => $p->rice_allowance,
+                    'hmo' => $p->hmo,
                     'netPay' => $p->net_pay,
                     'sentAt' => $p->sent_at,
                 ]) : null,
@@ -92,9 +95,12 @@ class PayrollRunController extends Controller
                 'status' => 'draft',
             ]);
 
-                     $rates = ContributionCalculator::rates();
+                $rates = ContributionCalculator::rates();
+            $enrollments = Enrollment::with(['hmoPlan', 'companyBenefit'])->get()->groupBy('employee_id');
+            $loans = EmployeeLoan::where('balance', '>', 0)
+                ->where('start_date', '<=', $data['periodEnd'])->get()->groupBy('employee_id');
 
-            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates) {
+            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($runuse ($run, $byEmployee, $rates, $enrollments, $loans) {
                 $s = ['days' => 0, 'late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0, 'gross' => 0.0, 'deduction' => 0.0, 'otPay' => 0.0];
 
                 foreach ($byEmployee->get($emp->id, collect()) as $r) {
@@ -116,7 +122,28 @@ class PayrollRunController extends Controller
                 $sss = round(ContributionCalculator::employee($monthly, $rates['sss'] ?? null) / 2, 2);
                 $philhealth = round(ContributionCalculator::employee($monthly, $rates['philhealth'] ?? null) / 2, 2);
                 $pagIbig = round(ContributionCalculator::employee($monthly, $rates['pagibig'] ?? null) / 2, 2);
-                $claims = 0; // next step
+                                $claims = 0; // next step
+
+                $hmo = 0.0;
+                $allow = ['transport_allowance' => 0.0, 'rice_allowance' => 0.0];
+                foreach ($enrollments->get($emp->id, collect()) as $en) {
+                    if ($en->kind === 'hmo' && $en->hmoPlan) {
+                        $hmo += $en->hmoPlan->monthly_premium * $en->hmoPlan->employee_share / 100 / 2;
+                    }
+                    if ($en->kind === 'benefit' && $en->companyBenefit) {
+                        $b = $en->companyBenefit;
+                        $amt = $b->basis === 'per_day' ? $b->amount * $s['days'] : $b->amount / 2;
+                        if (isset($allow[$b->payslip_field])) {
+                            $allow[$b->payslip_field] += $amt;
+                        }
+                    }
+                }
+                $hmo = round($hmo, 2);
+
+                $loanTotals = ['sss_loan' => 0.0, 'hdmf_loan' => 0.0, 'cash_advance' => 0.0];
+                foreach ($loans->get($emp->id, collect()) as $l) {
+                    $loanTotals[$l->type] += min($l->amortization, $l->balance);
+                }
 
                 Payslip::create([
                     'payroll_run_id' => $run->id,
@@ -133,8 +160,18 @@ class PayrollRunController extends Controller
                     'sss' => $sss,
                     'pag_ibig' => $pagIbig,
                     'philhealth' => $philhealth,
+                    'hmo' => $hmo,
+                    'transport_allowance' => round($allow['transport_allowance'], 2),
+                    'rice_allowance' => round($allow['rice_allowance'], 2),
+                    'sss_loan' => round($loanTotals['sss_loan'], 2),
+                    'hdmf_loan' => round($loanTotals['hdmf_loan'], 2),
+                    'cash_advance' => round($loanTotals['cash_advance'], 2),
                     'claims' => $claims,
-                    'net_pay' => round($total - $sss - $philhealth - $pagIbig - $claims, 2),
+                    'net_pay' => round($total -                     'net_pay' => round(
+                        $total + $allow['transport_allowance'] + $allow['rice_allowance']
+                        - $sss - $philhealth - $pagIbig - $hmo - array_sum($loanTotals) - $claims,
+                        2
+                    ),
                     'employee_no' => $emp->employee_no,
                 ]);
             });
@@ -161,7 +198,16 @@ class PayrollRunController extends Controller
         if ($payrollRun->status !== 'approved') {
             return response()->json(['message' => 'Approve the payroll before releasing it.'], 422);
         }
-        $payrollRun->update(['status' => 'released']);
+               DB::transaction(function () use ($payrollRun) {
+            foreach ($payrollRun->payslips as $p) {
+                EmployeeLoan::where('employee_id', $p->employee_id)
+                    ->where('balance', '>', 0)
+                    ->where('start_date', '<=', $payrollRun->period_end)
+                    ->get()
+                    ->each(fn ($l) => $l->update(['balance' => max(0, $l->balance - $l->amortization)]));
+            }
+            $payrollRun->update(['status' => 'released']);
+        });
         return $this->format($payrollRun->load('payslips'));
     }
 
