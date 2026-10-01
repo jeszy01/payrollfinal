@@ -42,5 +42,10 @@ return [
     'from' => env('RESEND_FROM', 'onboarding@resend.dev'),
     'keys' => json_decode(env('RESEND_KEYS', '{}'), true) ?: [],
 ],
+
+'gemini' => [
+    'key' => env('GEMINI_API_KEY'),
+    'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+],
 'otp_enabled' => env('OTP_ENABLED', false),
 ];

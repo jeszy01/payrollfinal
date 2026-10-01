@@ -3,7 +3,7 @@ import { NavLink, Link, useLocation } from 'react-router-dom'
 import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight,HeartPulse, LayoutGrid, Receipt, TrendingUp, Users } from 'lucide-react'
 import { currentUser } from '../lib/auth'
 
-type Props = { collapsed: boolean; onToggle: () => void }
+type Props = { collapsed: boolean; onToggle: () => void; mobileOpen?: boolean; onClose?: () => void }
 
 const groups = [
   {
@@ -51,7 +51,8 @@ const groups = [
   },
 ]
 
-export default function Sidebar({ collapsed, onToggle }: Props) {
+export default function Sidebar({ collapsed: collapsedProp, onToggle, mobileOpen }: Props) {
+  const collapsed = collapsedProp && !mobileOpen
   const { pathname } = useLocation()
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(groups.map((g) => [g.key, pathname.startsWith(g.base)]))
@@ -62,9 +63,9 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
 
   return (
     <aside
-      className={`flex shrink-0 flex-col text-white transition-all duration-200 ${
-        collapsed ? 'w-[76px]' : 'w-[274px]'
-      }`}
+      className={`fixed inset-y-0 left-0 z-40 flex w-[274px] max-w-[85vw] shrink-0 flex-col text-white transition-transform duration-200 md:static md:z-auto md:translate-x-0 md:transition-all ${
+        mobileOpen ? 'translate-x-0' : '-translate-x-full'
+      } ${collapsed ? 'md:w-[76px]' : 'md:w-[274px]'}`}
       style={{ background: 'linear-gradient(180deg, #2b4fd0 0%, #1a2f8a 100%)' }}
     >
       <Link to="/" className="flex items-center gap-3 px-5 py-6">
@@ -173,7 +174,7 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
         <button
           onClick={onToggle}
           aria-label="Toggle sidebar"
-          className={`grid size-8 place-items-center rounded-lg border border-white/30 hover:bg-white/10 ${
+className={`hidden size-8 place-items-center rounded-lg border border-white/30 hover:bg-white/10 md:grid ${
             collapsed ? '' : 'ml-auto'
           }`}
         >

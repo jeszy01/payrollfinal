@@ -17,7 +17,7 @@ class LogActivity
         $response = $next($request);
 
         try {
-            $this->record($request, $response->getStatusCode(), $user);
+        $this->record($request, $response->getStatusCode(), $user, $response);
         } catch (\Throwable $e) {
             report($e);
         }
@@ -25,7 +25,7 @@ class LogActivity
         return $response;
     }
 
-    private function record(Request $request, int $status, $user): void
+private function record(Request $request, int $status, $user, $response = null): void
     {
         if (! in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE'])) {
             return;
@@ -33,18 +33,33 @@ class LogActivity
 
         $uri = preg_replace('#^api/#', '', $request->route()?->uri() ?? $request->path());
 
-        if ($uri === 'login') {
-            $email = (string) $request->input('email');
-            $account = User::where('email', $email)->first();
-            $ok = $status < 400;
-            $this->write($request, $account, $ok ? 'Login' : 'Failed login', 'Auth',
-                $ok ? 'Signed in' : 'Failed sign-in attempt', ['email' => $email], $email);
-            return;
-        }
+      if ($uri === 'login') {
+    $email = (string) $request->input('email');
+    $account = User::where('email', $email)->first();
+    $otpRequired = (json_decode($response?->getContent() ?? '', true)['otp_required'] ?? false);
 
-        if ($status >= 400 || $uri === 'verify-otp') {
-            return;
-        }
+    if ($status >= 400) {
+        $this->write($request, $account, 'Failed login', 'Auth', 'Failed sign-in attempt', ['email' => $email], $email);
+    } elseif ($otpRequired) {
+        $this->write($request, $account, 'OTP sent', 'Auth', 'Password accepted, OTP sent', ['email' => $email], $email);
+    } else {
+        $this->write($request, $account, 'Login', 'Auth', 'Signed in', ['email' => $email], $email);
+    }
+    return;
+}
+
+if ($uri === 'verify-otp') {
+    $email = (string) $request->input('email');
+    $account = User::where('email', $email)->first();
+    $ok = $status < 400;
+    $this->write($request, $account, $ok ? 'Login' : 'Failed OTP', 'Auth',
+        $ok ? 'Signed in (OTP verified)' : 'Invalid or expired OTP', ['email' => $email], $email);
+    return;
+}
+
+if ($status >= 400) {
+    return;
+}
 
         if ($uri === 'logout') {
             $this->write($request, $user, 'Logout', 'Auth', 'Signed out');
@@ -80,6 +95,7 @@ class LogActivity
             '#^benefits/enrollments#' => ['Benefits', 'enrollment'],
             '#^benefits/loans#' => ['Benefits', 'loan'],
             '#^claims#' => ['Claims', 'claim'],
+            '#^ai/chat#' => ['AI', 'Arc question'],
         ];
 
         $module = 'System';
@@ -100,6 +116,7 @@ class LogActivity
             $method === 'DELETE' => 'Deleted',
             $method === 'POST' && $uri === 'payroll-runs' => 'Generated',
             $uri === 'attendance' => 'Recorded',
+            $uri === 'ai/chat' => 'Asked',
             $method === 'POST' => 'Created',
             default => 'Updated',
         };

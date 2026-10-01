@@ -20,9 +20,12 @@ use App\Http\Middleware\LogActivity;
 
     Route::post('/attendance-events', [AttendanceEventController::class, 'store'])
     ->middleware([ApiKey::class, 'throttle:120,1']);
-        Route::middleware(['auth:sanctum', LogActivity::class])->group(function () {
+    Route::middleware(['auth:sanctum', LogActivity::class])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/ai/chat', [\App\Http\Controllers\AiController::class, 'chat'])
+    ->middleware([EnsureRole::class . ':admin,hr', 'throttle:20,1']);
 
     Route::apiResource('positions', PositionController::class)->except(['show']);
     Route::apiResource('employees', EmployeeController::class)->except(['show']);
@@ -50,8 +53,6 @@ use App\Http\Middleware\LogActivity;
 
     Route::middleware(EnsureRole::class . ':admin')->group(function () {
     Route::post('/payroll-runs/{payrollRun}/approve', [PayrollRunController::class, 'approve']);
-    Route::put('/contribution-rates/{type}', [\App\Http\Controllers\ContributionRateController::class, 'update']);
-    Route::put('/contribution-rates/{type}', [\App\Http\Controllers\ContributionRateController::class, 'update']);
     Route::delete('/payroll-runs/{payrollRun}', [PayrollRunController::class, 'destroy']);
 });
 
@@ -64,10 +65,11 @@ use App\Http\Middleware\LogActivity;
     Route::put('/contribution-rates/{type}', [\App\Http\Controllers\ContributionRateController::class, 'update']);
     Route::post('/claims/{claim}/approve', [\App\Http\Controllers\ClaimController::class, 'approve']);
     Route::post('/claims/{claim}/reject', [\App\Http\Controllers\ClaimController::class, 'reject']);
-    Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index']);
 
-  
+
+
     Route::middleware(EnsureRole::class . ':admin')->group(function () {
     Route::apiResource('users', UserController::class)->except(['show']);
+    Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index']);
 });
 });

@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, ChevronDown, LogOut, Moon, ScrollText, Search, Sun, UserCog } from 'lucide-react'
+import { Bell, ChevronDown, LogOut, Menu, Moon, ScrollText, Search, Sun, UserCog } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { currentUser, logout } from '../lib/auth'
 
-type Props = { dark: boolean; onToggleTheme: () => void }
+type Props = { dark: boolean; onToggleTheme: () => void; onMenu: () => void }
 
 const menuItem =
   'flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/10'
 
-export default function Header({ dark, onToggleTheme }: Props) {
+export default function Header({ dark, onToggleTheme, onMenu }: Props) {
   const [menu, setMenu] = useState(false)
   const navigate = useNavigate()
   const ref = useRef<HTMLDivElement>(null)
@@ -27,6 +27,9 @@ export default function Header({ dark, onToggleTheme }: Props) {
 
   return (
     <header className="hd">
+      <button className="hd-icon md:hidden" onClick={onMenu} aria-label="Open menu">
+        <Menu size={18} />
+      </button>
       <label className="hd-search">
         <Search size={17} />
         <input
@@ -48,7 +51,7 @@ export default function Header({ dark, onToggleTheme }: Props) {
             <div className="grid size-10 place-items-center rounded-full bg-[var(--brand)] text-sm font-bold text-white">
               {name[0]?.toUpperCase()}
             </div>
-            <div className="flex flex-col text-left leading-tight">
+           <div className="hidden flex-col text-left leading-tight sm:flex">
               <strong className="text-sm">{name}</strong>
               <span className="text-xs text-[var(--muted)]">{role}</span>
             </div>

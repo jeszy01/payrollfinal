@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import { startPolling } from '../lib/polling'
+import ArcChat from '../components/ArcChat'
 
 const titles: Record<string, [string, string]> = {
   '/': ['Dashboard', 'Overview'],
@@ -47,21 +48,31 @@ const groups: Record<string, string> = {
 export default function Layout() {
   const { pathname } = useLocation()
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
   const [title, subtitle] = titles[pathname] ?? ['', '']
   const group = groups[pathname]
 
   useEffect(() => startPolling(), [])
+  useEffect(() => setMobileOpen(false), [pathname])
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light'
     localStorage.setItem('theme', dark ? 'dark' : 'light')
   }, [dark])
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-page)' }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
+   <div className="flex h-dvh overflow-hidden" style={{ background: 'var(--bg-page)' }}>
+  {mobileOpen && (
+    <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={() => setMobileOpen(false)} />
+  )}
+  <Sidebar
+    collapsed={collapsed}
+    onToggle={() => setCollapsed((c) => !c)}
+    mobileOpen={mobileOpen}
+    onClose={() => setMobileOpen(false)}
+  />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header dark={dark} onToggleTheme={() => setDark((d) => !d)} />
+<Header dark={dark} onToggleTheme={() => setDark((d) => !d)} onMenu={() => setMobileOpen(true)} />
         <main className="flex-1 overflow-y-auto">
           <div className="pg">
             {title && (
@@ -79,6 +90,7 @@ export default function Layout() {
           </div>
         </main>
       </div>
+      <ArcChat />
     </div>
   )
 }
