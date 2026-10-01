@@ -81,12 +81,15 @@ export default function Login() {
        <span />
 
         <div>
-      <div className="flex items-center justify-center gap-4">
-  <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border border-white/25 bg-white shadow-lg shadow-black/20 lg:h-24 lg:w-24">
+    <div className="flex items-center justify-center gap-4">
+  <div
+    className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border border-white/30 shadow-lg shadow-black/25 lg:h-24 lg:w-24"
+    style={{ background: 'linear-gradient(180deg, #4a6ee0 0%, #3452c9 100%)' }}
+  >
     <img
       src="/logo_mark.png"
       alt="Archon Nell Incorporated"
-      className="h-14 w-14 object-contain lg:h-[68px] lg:w-[68px]"
+      className="h-[72%] w-[72%] object-contain"
     />
   </div>
   <div className="leading-tight">
