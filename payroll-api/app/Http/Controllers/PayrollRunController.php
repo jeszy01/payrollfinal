@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AttendanceRecord;
 use App\Models\Employee;
-use App\Models\PayrollRun;
-use App\Models\Payslip;
 use App\Models\EmployeeLoan;
 use App\Models\Enrollment;
+use App\Models\PayrollRun;
+use App\Models\Payslip;
 use App\Services\ContributionCalculator;
 use App\Services\DayCalculator;
 use Illuminate\Http\Request;
@@ -63,19 +63,26 @@ class PayrollRunController extends Controller
         return $this->format($payrollRun->load('payslips'));
     }
 
-      public function store(Request $request)
+       public function store(Request $request)
     {
-        $data = $request->validate([
-            'periodStart' => 'required|date_format:Y-m-d',
-            'periodEnd' => 'required|date_format:Y-m-d|after_or_equal:periodStart',
-        ]);
+        // Cutoff always follows today's date
+        $today = now('Asia/Manila');
+        $cut = (int) (DB::table('payroll_settings')->value('cutoff_day') ?: 15);
+        $first = $today->day <= $cut;
+        $data = [
+            'periodStart' => $today->copy()->day($first ? 1 : $cut + 1)->format('Y-m-d'),
+            'periodEnd' => ($first ? $today->copy()->day($cut) : $today->copy()->endOfMonth())->format('Y-m-d'),
+        ];
 
-        if (PayrollRun::where('period_start', '<=', $data['periodEnd'])
-            ->where('period_end', '>=', $data['periodStart'])->exists()) {
-            return response()->json(['message' => 'This period overlaps an existing payroll run.'], 422);
+        if (PayrollRun::where('period_start', $data['periodStart'])
+            ->where('period_end', $data['periodEnd'])
+            ->where('status', '!=', 'released')->exists()) {
+            return response()->json(['message' => 'A payroll for this cutoff is still waiting for approval or release.'], 422);
         }
 
-        $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])->get();
+        // Only attendance not yet included in a payroll run
+        $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])
+            ->whereNull('payroll_run_id')->get();
 
         $open = $records->filter(fn ($r) => DayCalculator::compute($r)['status'] === 'working')->count();
         if ($open > 0) {
@@ -86,7 +93,7 @@ class PayrollRunController extends Controller
 
         $byEmployee = $records->groupBy('employee_id');
 
-        $run = DB::transaction(function () use ($data, $byEmployee) {
+        $run = DB::transaction(function () use ($data, $byEmployee, $records) {
             $run = PayrollRun::create([
                 'period_start' => $data['periodStart'],
                 'period_end' => $data['periodEnd'],
@@ -121,7 +128,7 @@ class PayrollRunController extends Controller
                 $sss = round(ContributionCalculator::employee($monthly, $rates['sss'] ?? null) / 2, 2);
                 $philhealth = round(ContributionCalculator::employee($monthly, $rates['philhealth'] ?? null) / 2, 2);
                 $pagIbig = round(ContributionCalculator::employee($monthly, $rates['pagibig'] ?? null) / 2, 2);
-                $claims = 0; // next step
+                $claims = 0;
 
                 $hmo = 0.0;
                 $allow = ['transport_allowance' => 0.0, 'rice_allowance' => 0.0];
@@ -175,6 +182,9 @@ class PayrollRunController extends Controller
                 ]);
             });
 
+            // Mark attendance as included, so Active resets to zero
+            AttendanceRecord::whereIn('id', $records->pluck('id'))->update(['payroll_run_id' => $run->id]);
+
             return $run;
         });
 
@@ -191,13 +201,13 @@ class PayrollRunController extends Controller
         return $this->format($payrollRun->load('payslips'));
     }
 
-    // approved -> released (this is what shows under Archived)
+    // approved -> released (moves to Archived, loan balances go down)
     public function release(PayrollRun $payrollRun)
     {
         if ($payrollRun->status !== 'approved') {
             return response()->json(['message' => 'Approve the payroll before releasing it.'], 422);
         }
-            DB::transaction(function () use ($payrollRun) {
+        DB::transaction(function () use ($payrollRun) {
             foreach ($payrollRun->payslips as $p) {
                 EmployeeLoan::where('employee_id', $p->employee_id)
                     ->where('balance', '>', 0)
@@ -210,13 +220,19 @@ class PayrollRunController extends Controller
         return $this->format($payrollRun->load('payslips'));
     }
 
-    // drafts only
+    // any status; attendance returns to Active, loan balances restored if released
     public function destroy(PayrollRun $payrollRun)
     {
-        if ($payrollRun->status !== 'draft') {
-            return response()->json(['message' => 'Only a draft payroll can be deleted.'], 422);
-        }
         DB::transaction(function () use ($payrollRun) {
+            if ($payrollRun->status === 'released') {
+                foreach ($payrollRun->payslips as $p) {
+                    EmployeeLoan::where('employee_id', $p->employee_id)
+                        ->where('start_date', '<=', $payrollRun->period_end)
+                        ->get()
+                        ->each(fn ($l) => $l->update(['balance' => min($l->principal, $l->balance + $l->amortization)]));
+                }
+            }
+            AttendanceRecord::where('payroll_run_id', $payrollRun->id)->update(['payroll_run_id' => null]);
             $payrollRun->payslips()->delete();
             $payrollRun->delete();
         });
