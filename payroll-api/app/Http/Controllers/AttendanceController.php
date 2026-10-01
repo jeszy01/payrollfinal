@@ -22,6 +22,7 @@ class AttendanceController extends Controller
             'timeOut' => $r->time_out,
             'absent' => $r->absent,
             'archived' => $r->archived,
+            'payrollRunId' => $r->payroll_run_id,
         ];
     }
 
