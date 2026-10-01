@@ -81,12 +81,12 @@ export default function Login() {
        <span />
 
         <div>
-          <div className="w-full max-w-xl rounded-3xl bg-white p-5 shadow-2xl lg:p-8">
-  <img src="/logo.png" alt="Archon Nell Incorporated" className="h-auto w-full" />
+        <div className="flex flex-col items-center text-center">
+  <div className="grid h-32 w-32 place-items-center rounded-3xl bg-white p-3 shadow-2xl lg:h-40 lg:w-40">
+    <img src="/logo.png" alt="Archon Nell Incorporated" className="h-auto w-full object-contain" />
+  </div>
+  <h2 className="mt-5 text-xl font-extrabold lg:text-2xl">Archon Nell Incorporated</h2>
 </div>
-<p className="mt-6 max-w-md text-sm text-white/75 lg:text-base">
-  Attendance, payroll, benefits, and claims in one system.
-</p>
           <ul className="mt-8 hidden space-y-3 lg:block">
             {features.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3 text-sm font-semibold">
