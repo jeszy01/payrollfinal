@@ -94,7 +94,7 @@ class AiController extends Controller
             $answer = $gemini->ask($system, $contents);
         } catch (\Throwable $e) {
             report($e);
-            return response()->json(['message' => 'Arc is unavailable right now. Try again in a moment.'], 503);
+        return response()->json(['message' => 'Arc error: ' . $e->getMessage()], 503);
         }
 
         return response()->json(['answer' => strtr($answer, $back)]);
