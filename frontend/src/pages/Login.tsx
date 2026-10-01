@@ -78,19 +78,15 @@ export default function Login() {
             'radial-gradient(circle at 20% 0%, #4a6ee0 0%, transparent 55%), linear-gradient(180deg, #2b4fd0 0%, #1a2f8a 100%)',
         }}
       >
-        <div className="inline-flex w-fit rounded-2xl bg-white px-4 py-2 shadow-lg">
-          <img src="/logo.png" alt="Archon Nell Incorporated" className="h-10 w-auto lg:h-14" />
-        </div>
+       <span />
 
         <div>
-          <h2 className="text-3xl font-extrabold leading-tight lg:text-5xl">
-            Payroll &amp; Benefits,
-            <br />
-            <span className="text-white/60">simplified.</span>
-          </h2>
-          <p className="mt-3 max-w-md text-sm text-white/75 lg:mt-5 lg:text-base">
-            Attendance, payroll, benefits, and claims in one system.
-          </p>
+          <div className="w-full max-w-xl rounded-3xl bg-white p-5 shadow-2xl lg:p-8">
+  <img src="/logo.png" alt="Archon Nell Incorporated" className="h-auto w-full" />
+</div>
+<p className="mt-6 max-w-md text-sm text-white/75 lg:text-base">
+  Attendance, payroll, benefits, and claims in one system.
+</p>
           <ul className="mt-8 hidden space-y-3 lg:block">
             {features.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3 text-sm font-semibold">
