@@ -26,6 +26,7 @@ use App\Http\Middleware\EnsureRole;
     Route::apiResource('employees', EmployeeController::class)->except(['show']);
     Route::get('/settings', [SettingsController::class, 'show']);
     Route::put('/settings', [SettingsController::class, 'update']);
+    Route::get('/contribution-rates', [\App\Http\Controllers\ContributionRateController::class, 'index']);
 
     Route::get('/attendance', [AttendanceController::class, 'index']);
     Route::put('/attendance', [AttendanceController::class, 'upsert']);
@@ -35,15 +36,20 @@ use App\Http\Middleware\EnsureRole;
     Route::post('/adjustments/{adjustment}/approve', [AdjustmentController::class, 'approve']);
     Route::post('/adjustments/{adjustment}/reject', [AdjustmentController::class, 'reject']);
 
-Route::get('/payroll-runs', [PayrollRunController::class, 'index']);
-Route::get('/payroll-runs/{payrollRun}', [PayrollRunController::class, 'show']);
-Route::post('/payroll-runs', [PayrollRunController::class, 'store']);
-Route::post('/payroll-runs/{payrollRun}/release', [PayrollRunController::class, 'release']);
+    Route::get('/payroll-runs', [PayrollRunController::class, 'index']);
+    Route::get('/payroll-runs/{payrollRun}', [PayrollRunController::class, 'show']);
+    Route::post('/payroll-runs', [PayrollRunController::class, 'store']);
+    Route::post('/payroll-runs/{payrollRun}/release', [PayrollRunController::class, 'release']);
 
-Route::middleware(EnsureRole::class . ':admin')->group(function () {
+    Route::middleware(EnsureRole::class . ':admin')->group(function () {
     Route::post('/payroll-runs/{payrollRun}/approve', [PayrollRunController::class, 'approve']);
+    Route::put('/contribution-rates/{type}', [\App\Http\Controllers\ContributionRateController::class, 'update']);
+    Route::put('/contribution-rates/{type}', [\App\Http\Controllers\ContributionRateController::class, 'update']);
     Route::delete('/payroll-runs/{payrollRun}', [PayrollRunController::class, 'destroy']);
 });
+
+    Route::get('/contribution-rates', [\App\Http\Controllers\ContributionRateController::class, 'index']);
+    Route::put('/contribution-rates/{type}', [\App\Http\Controllers\ContributionRateController::class, 'update']);
 
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
     Route::middleware(EnsureRole::class . ':admin')->group(function () {

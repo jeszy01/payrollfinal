@@ -6,6 +6,7 @@ use App\Models\AttendanceRecord;
 use App\Models\Employee;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
+use App\Services\ContributionCalculator;
 use App\Services\DayCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -91,7 +92,9 @@ class PayrollRunController extends Controller
                 'status' => 'draft',
             ]);
 
-            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee) {
+                     $rates = ContributionCalculator::rates();
+
+            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates) {
                 $s = ['days' => 0, 'late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0, 'gross' => 0.0, 'deduction' => 0.0, 'otPay' => 0.0];
 
                 foreach ($byEmployee->get($emp->id, collect()) as $r) {
@@ -109,7 +112,11 @@ class PayrollRunController extends Controller
                 }
 
                 $total = round(max(0, $s['gross'] - $s['deduction']) + $s['otPay'], 2);
-                $sss = 0; $pagIbig = 0; $claims = 0; // next step
+                $monthly = (float) ($emp->position->monthly_salary ?? 0);
+                $sss = round(ContributionCalculator::employee($monthly, $rates['sss'] ?? null) / 2, 2);
+                $philhealth = round(ContributionCalculator::employee($monthly, $rates['philhealth'] ?? null) / 2, 2);
+                $pagIbig = round(ContributionCalculator::employee($monthly, $rates['pagibig'] ?? null) / 2, 2);
+                $claims = 0; // next step
 
                 Payslip::create([
                     'payroll_run_id' => $run->id,
@@ -125,8 +132,9 @@ class PayrollRunController extends Controller
                     'overtime_pay' => round($s['otPay'], 2),
                     'sss' => $sss,
                     'pag_ibig' => $pagIbig,
+                    'philhealth' => $philhealth,
                     'claims' => $claims,
-                    'net_pay' => round($total - $sss - $pagIbig - $claims, 2),
+                    'net_pay' => round($total - $sss - $philhealth - $pagIbig - $claims, 2),
                     'employee_no' => $emp->employee_no,
                 ]);
             });

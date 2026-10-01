@@ -8,18 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('payslips', function (Blueprint $table) {
-            if (! Schema::hasColumn('payslips', 'employee_no')) {
-                $table->string('employee_no')->nullable();
-            }
-            foreach ([
-                'sl_cash_conversion', 'philhealth', 'cash_advance', 'sss_loan',
-                'hdmf_loan', 'transport_allowance', 'rice_allowance',
-            ] as $col) {
-                if (! Schema::hasColumn('payslips', $col)) {
-                    $table->decimal($col, 12, 2)->default(0);
-                }
-            }
+                Schema::table('payslips', function (Blueprint $table) {
+            $table->dropColumn(['employee_no', 'philhealth', 'hdmf', 'sss_loan', 'hdmf_loan',
+                'cash_advance', 'sl_conversion', 'transportation_allowance', 'rice_allowance']);
         });
     }
 
