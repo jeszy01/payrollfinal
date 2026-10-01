@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight,HeartPulse, Receipt, TrendingUp, Users } from 'lucide-react'
+import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight,HeartPulse, LayoutGrid, Receipt, TrendingUp, Users } from 'lucide-react'
 import { currentUser } from '../lib/auth'
 
 type Props = { collapsed: boolean; onToggle: () => void }
@@ -84,7 +84,19 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
         )}
       </Link>
 
-   <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+<nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition ${
+              isActive ? 'bg-[#4271f0] text-white' : 'text-white/85 hover:bg-white/10'
+            } ${collapsed ? 'justify-center' : ''}`
+          }
+        >
+          <LayoutGrid size={18} className="shrink-0" />
+          {!collapsed && <span>Dashboard</span>}
+        </NavLink>
         <NavLink
           to="/employees"
           className={({ isActive }) =>
