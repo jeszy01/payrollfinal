@@ -1,8 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Models\Adjustment;
+use App\Models\AdjustmentRequest;
 use App\Models\Claim;
 use App\Models\Employee;
 use App\Models\Enrollment;
@@ -84,9 +83,9 @@ class DashboardController extends Controller
                 'rejected' => $claim('rejected'),
                 'paid' => $claim('paid'),
             ],
-            'adjustmentsPending' => Adjustment::where('status', 'pending')->count(),
+            'adjustmentsPending' => AdjustmentRequest::where('status', 'pending')->count(),
             'hmo' => [
-                'enrolled' => Enrollment::where('kind', 'hmo')
+               'enrolled' => Enrollment::where('kind', 'hmo')
                     ->whereIn('employee_id', $active->pluck('id'))
                     ->distinct()->count('employee_id'),
             ],
