@@ -17,7 +17,7 @@ export default function CutoffClock({ cutoff }: { cutoff: string }) {
   })
 
   return (
-    <div className="card flex items-center gap-4 px-4 py-2.5 text-sm font-semibold">
+       <div className="card flex items-center gap-4 whitespace-nowrap px-4 py-2.5 text-sm font-semibold">
       <span className="flex items-center gap-2">
         <CalendarDays size={16} className="text-[var(--brand)]" />
         {cutoff}

@@ -265,10 +265,32 @@ export default function Payroll() {
           </span>
         )}
 
-          <div className="ml-auto flex items-center gap-2">
-          {showLive && !review && (
-            <button className="btn-primary" disabled={busy || rows.length === 0} onClick={() => setReview(true)}>
-              Generate Payroll
+                 <div className="ml-auto flex items-center gap-2">
+          {tab === 'active' && <CutoffClock cutoff={current.label} />}
+
+          {isAdmin && shown && (
+            <button
+              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
+              disabled={busy}
+              onClick={() =>
+                setAsk({
+                  title: 'Delete payroll',
+                  message: 'Delete this payroll? Its attendance returns to Active.',
+                  onYes: () => act(() => deleteRun(shown.id)),
+                })
+              }
+            >
+              Delete
+            </button>
+          )}
+
+          {tab === 'archived' && shown && slips && slips.length > 0 && (
+            <button
+              className="whitespace-nowrap rounded-xl border px-5 py-2.5 text-sm font-semibold"
+              style={{ borderColor: 'var(--line)' }}
+              onClick={() => exportCsv(shown, slips)}
+            >
+              Export CSV
             </button>
           )}
 
@@ -329,108 +351,12 @@ export default function Payroll() {
             </button>
           )}
 
-          {tab === 'archived' && shown && slips && slips.length > 0 && (
-            <button
-              className="whitespace-nowrap rounded-xl border px-5 py-2.5 text-sm font-semibold"
-              style={{ borderColor: 'var(--line)' }}
-              onClick={() => exportCsv(shown, slips)}
-            >
-              Export CSV
+          {showLive && !review && (
+            <button className="btn-primary" disabled={busy || rows.length === 0} onClick={() => setReview(true)}>
+              Generate Payroll
             </button>
           )}
-                 {isAdmin && shown && (
-            <button
-              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
-              disabled={busy}
-              onClick={() =>
-                setAsk({
-                  title: 'Delete payroll',
-                  message: 'Delete this payroll? Its attendance returns to Active.',
-                  onYes: () => act(() => deleteRun(shown.id)),
-                })
-              }
-            >
-              Delete
-            </button>
-          )}
-                  {isAdmin && shown && (
-            <button
-              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
-              disabled={busy}
-              onClick={() =>
-                setAsk({
-                  title: 'Delete payroll',
-                  message: 'Delete this payroll? Its attendance returns to Active.',
-                  onYes: () => act(() => deleteRun(shown.id)),
-                })
-              }
-            >
-              Delete
-            </button>
-          )}
-                 {isAdmin && shown && (
-            <button
-              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
-              disabled={busy}
-              onClick={() =>
-                setAsk({
-                  title: 'Delete payroll',
-                  message: 'Delete this payroll? Its attendance returns to Active.',
-                  onYes: () => act(() => deleteRun(shown.id)),
-                })
-              }
-            >
-              Delete
-            </button>
-          )}
-                  {isAdmin && shown && (
-            <button
-              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
-              disabled={busy}
-              onClick={() =>
-                setAsk({
-                  title: 'Delete payroll',
-                  message: 'Delete this payroll? Its attendance returns to Active.',
-                  onYes: () => act(() => deleteRun(shown.id)),
-                })
-              }
-            >
-              Delete
-            </button>
-          )}
-                    {isAdmin && shown && (
-            <button
-              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
-              disabled={busy}
-              onClick={() =>
-                setAsk({
-                  title: 'Delete payroll',
-                  message: 'Delete this payroll? Its attendance returns to Active.',
-                  onYes: () => act(() => deleteRun(shown.id)),
-                })
-              }
-            >
-              Delete
-            </button>
-          )}
-            {isAdmin && shown && (
-            <button
-              className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
-              disabled={busy}
-              onClick={() =>
-                setAsk({
-                  title: 'Delete payroll',
-                  message: 'Delete this payroll? Its attendance returns to Active.',
-                  onYes: () => act(() => deleteRun(shown.id)),
-                })
-              }
-            >
-              Delete
-            </button>
-          )}
-         {tab === 'active' && <CutoffClock cutoff={current.label} />}
         </div>
-      </div>
 
       {error && (
         <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
