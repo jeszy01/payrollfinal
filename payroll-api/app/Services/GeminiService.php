@@ -16,6 +16,7 @@ class GeminiService
 
         $res = Http::withHeaders(['x-goog-api-key' => $key])
             ->timeout(30)
+        ->retry(2, 1500, throw: false)
             ->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent", [
                 'system_instruction' => ['parts' => [['text' => $system]]],
                 'contents' => $contents,
