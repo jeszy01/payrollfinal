@@ -35,6 +35,14 @@ class PayrollRunController extends Controller
                     'sss' => $p->sss,
                     'pagIbig' => $p->pag_ibig,
                     'claims' => $p->claims,
+                    'employeeNo' => $p->employee_no,
+                    'slCashConversion' => $p->sl_cash_conversion,
+                    'philhealth' => $p->philhealth,
+                    'cashAdvance' => $p->cash_advance,
+                    'sssLoan' => $p->sss_loan,
+                    'hdmfLoan' => $p->hdmf_loan,
+                    'transportAllowance' => $p->transport_allowance,
+                    'riceAllowance' => $p->rice_allowance,
                     'netPay' => $p->net_pay,
                     'sentAt' => $p->sent_at,
                 ]) : null,
@@ -119,6 +127,7 @@ class PayrollRunController extends Controller
                     'pag_ibig' => $pagIbig,
                     'claims' => $claims,
                     'net_pay' => round($total - $sss - $pagIbig - $claims, 2),
+                    'employee_no' => $emp->employee_no,
                 ]);
             });
 

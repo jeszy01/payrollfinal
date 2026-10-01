@@ -1,5 +1,6 @@
 import { api } from './api'
 
+
 export type RunStatus = 'draft' | 'approved' | 'released'
 
 export type PayslipRow = {
@@ -17,6 +18,14 @@ export type PayslipRow = {
   sss: number
   pagIbig: number
   claims: number
+  employeeNo: string | null
+  slCashConversion: number
+  philhealth: number
+  cashAdvance: number
+  sssLoan: number
+  hdmfLoan: number
+  transportAllowance: number
+  riceAllowance: number
   netPay: number
   sentAt: string | null
 }

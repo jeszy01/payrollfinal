@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import PayslipModal from '../components/PayslipModal'
 import { currentUser } from '../lib/auth'
 import { useEmployees } from '../lib/employeeStore'
 import { computeDay, cutoffOf, peso, todayStr } from '../lib/payroll'
 import {
   approveRun, deleteRun, generateRun, getRun, listRuns, releaseRun,
-  type PayrollRun,
+  type PayrollRun, type PayslipRow,
 } from '../lib/payrollRunStore'
 import { useSettings } from '../lib/settingsStore'
 import { useAttendance } from '../lib/useAttendance'
 
 const liveCols = ['Employee', 'Days Worked', 'Late', 'Undertime', 'Overtime', 'Absent', 'Total Salary']
-const runCols = ['Employee', 'Days Worked', 'Late', 'Undertime', 'Overtime', 'Absent', 'Gross', 'Deductions', 'OT Pay', 'Net Pay']
+const runCols = ['Employee', 'Days Worked', 'Late', 'Undertime', 'Overtime', 'Absent', 'Gross', 'Deductions', 'OT Pay', 'Net Pay', '']
 
 const hrs = (mins: number) => {
   if (!mins) return '—'
@@ -36,6 +37,7 @@ export default function Payroll() {
   const [detail, setDetail] = useState<PayrollRun | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [slip, setSlip] = useState<PayslipRow | null>(null)
 
   const records = useAttendance()
   const employees = useEmployees()
@@ -49,15 +51,22 @@ export default function Payroll() {
   )
   useEffect(() => { refresh() }, [refresh])
 
-  const pending = runs.filter((r) => r.status !== 'released')
-  const released = runs.filter((r) => r.status === 'released')
-  const list = tab === 'active' ? pending : released
-  const shown = list.find((r) => r.id === picked) ?? list[0]
+  // Run for the current cutoff (if already generated)
+  const currentRun = runs.find((r) => r.periodStart === current.start && r.periodEnd === current.end)
+  const activeRun = currentRun && currentRun.status !== 'released' ? currentRun : undefined
+  // Archived = released runs + anything from an earlier cutoff
+  const archivedList = runs.filter((r) => r.status === 'released' || r.id !== currentRun?.id)
+
+  const shown = tab === 'active' ? activeRun : (archivedList.find((r) => r.id === picked) ?? archivedList[0])
+  const showLive = tab === 'active' && !currentRun
+  const releasedNote = tab === 'active' && currentRun?.status === 'released'
 
   useEffect(() => {
     if (!shown) { setDetail(null); return }
     getRun(shown.id).then(setDetail).catch((e) => setError(e.message))
   }, [shown?.id, shown?.status])
+
+  const slips = detail && detail.id === shown?.id ? detail.payslips : null
 
   const act = async (fn: () => Promise<unknown>, confirmMsg?: string) => {
     if (confirmMsg && !confirm(confirmMsg)) return
@@ -73,7 +82,7 @@ export default function Payroll() {
     }
   }
 
-  // Live preview of the current cutoff (shown only when no saved run is pending)
+  // Live preview of the current cutoff only
   const rows = useMemo<Row[]>(() => {
     return employees
       .filter((e) => e.status === 'Active')
@@ -102,7 +111,11 @@ export default function Payroll() {
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [employees, records, current.start, current.end])
 
-  const showLive = tab === 'active' && !shown
+  const emptyMsg = releasedNote
+    ? 'Payroll for this cutoff is released. See Archived.'
+    : tab === 'archived'
+      ? 'No archived payroll yet.'
+      : 'Loading...'
 
   return (
     <>
@@ -121,22 +134,22 @@ export default function Payroll() {
           ))}
         </div>
 
-        {list.length > 1 ? (
+        {tab === 'archived' && archivedList.length > 1 ? (
           <select
             value={shown?.id}
             onChange={(e) => setPicked(e.target.value)}
             className="rounded-xl border bg-transparent px-3 py-2 text-sm"
             style={{ borderColor: 'var(--line)' }}
           >
-            {list.map((r) => (
-              <option key={r.id} value={r.id}>{label(r)}</option>
+            {archivedList.map((r) => (
+              <option key={r.id} value={r.id}>{label(r)} ({r.status})</option>
             ))}
           </select>
-        ) : shown ? (
-          <span className="text-sm font-semibold text-[var(--muted)]">{label(shown)}</span>
-        ) : showLive ? (
-          <span className="text-sm font-semibold text-[var(--muted)]">{current.label}</span>
-        ) : null}
+        ) : (
+          <span className="text-sm font-semibold text-[var(--muted)]">
+            {tab === 'active' ? current.label : shown ? label(shown) : ''}
+          </span>
+        )}
 
         {shown && (
           <span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${badgeStyle[shown.status]}`}>
@@ -144,7 +157,7 @@ export default function Payroll() {
           </span>
         )}
 
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex items-center gap-2">
           {showLive && (
             <button
               className="btn-primary"
@@ -156,10 +169,11 @@ export default function Payroll() {
               Generate Payroll
             </button>
           )}
+
           {shown?.status === 'draft' && (
             <>
               <button
-                className="btn-icon px-4 text-red-600"
+                className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
                 disabled={busy}
                 onClick={() => act(() => deleteRun(shown.id), 'Delete this draft payroll?')}
               >
@@ -176,7 +190,8 @@ export default function Payroll() {
               )}
             </>
           )}
-          {shown?.status === 'approved' && isAdmin && (
+
+          {shown?.status === 'approved' && (
             <button
               className="btn-primary"
               disabled={busy}
@@ -222,17 +237,17 @@ export default function Payroll() {
         ) : (
           <table className="tbl">
             <thead>
-              <tr>{runCols.map((c) => <th key={c}>{c}</th>)}</tr>
+              <tr>{runCols.map((c, i) => <th key={i}>{c}</th>)}</tr>
             </thead>
             <tbody>
-              {!detail?.payslips?.length && (
+              {!slips?.length && (
                 <tr>
                   <td colSpan={runCols.length} className="!py-12 text-center text-[var(--muted)]">
-                    {tab === 'archived' ? 'No released payroll yet.' : 'Loading...'}
+                    {emptyMsg}
                   </td>
                 </tr>
               )}
-              {detail?.payslips?.map((p) => (
+              {slips?.map((p) => (
                 <tr key={p.id}>
                   <td className="font-bold">{p.employeeName}</td>
                   <td>{p.daysWorked}</td>
@@ -244,12 +259,32 @@ export default function Payroll() {
                   <td>{peso(p.deduction)}</td>
                   <td>{peso(p.overtimePay)}</td>
                   <td className="font-bold">{peso(p.netPay)}</td>
+                  <td>
+                    {shown?.status === 'released' && (
+                      <button
+                        className="whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold text-[var(--brand)] hover:bg-slate-50"
+                        style={{ borderColor: 'var(--line)' }}
+                        onClick={() => setSlip(p)}
+                      >
+                        View payslip
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {slip && shown && (
+        <PayslipModal
+          slip={slip}
+          periodStart={shown.periodStart}
+          periodEnd={shown.periodEnd}
+          onClose={() => setSlip(null)}
+        />
+      )}
     </>
   )
 }
