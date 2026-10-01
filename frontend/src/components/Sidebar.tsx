@@ -84,11 +84,11 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
         )}
       </Link>
 
-      <nav className="flex-1 space-y-1 px-4 py-2">
+     <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
         <NavLink
           to="/employees"
           className={({ isActive }) =>
-            `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition hover:bg-white/10 ${
+                    `flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-white/10 ${
               isActive ? 'bg-white/15 text-white' : 'text-white/85'
             } ${collapsed ? 'justify-center' : ''}`
           }
@@ -105,15 +105,15 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
             <div key={g.key}>
               <button
                 onClick={() => setOpen((o) => ({ ...o, [g.key]: !o[g.key] }))}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition hover:bg-white/10 ${
+                className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-white/10 ${
                   active ? 'bg-white/15 text-white' : 'text-white/85'
                 } ${collapsed ? 'justify-center' : ''}`}
               >
                 <Icon size={20} />
                 {!collapsed && (
                   <>
-                    <span>{g.label}</span>
-                    <ChevronDown size={16} className={`ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                                       <span className="whitespace-nowrap">{g.label}</span>
+                    <ChevronDown size={14} className={`ml-auto shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </>
                 )}
               </button>
@@ -126,7 +126,7 @@ export default function Sidebar({ collapsed, onToggle }: Props) {
                     to={to}
                     end
                     className={({ isActive }) =>
-                      `mt-1 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition hover:bg-white/10 ${
+                                          `mt-0.5 flex items-center gap-2.5 rounded-xl px-4 py-1.5 text-[13px] font-medium transition hover:bg-white/10 ${
                         isActive ? 'bg-white/15 text-white' : 'text-white/75'
                       }`
                     }
