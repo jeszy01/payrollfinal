@@ -357,6 +357,7 @@ export default function Payroll() {
             </button>
           )}
         </div>
+        </div>
 
       {error && (
         <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
