@@ -35,7 +35,10 @@ use App\Http\Middleware\EnsureRole;
     Route::post('/adjustments/{adjustment}/approve', [AdjustmentController::class, 'approve']);
     Route::post('/adjustments/{adjustment}/reject', [AdjustmentController::class, 'reject']);
 
-  Route::post('/payroll-runs/{payrollRun}/release', [PayrollRunController::class, 'release']);
+Route::get('/payroll-runs', [PayrollRunController::class, 'index']);
+Route::get('/payroll-runs/{payrollRun}', [PayrollRunController::class, 'show']);
+Route::post('/payroll-runs', [PayrollRunController::class, 'store']);
+Route::post('/payroll-runs/{payrollRun}/release', [PayrollRunController::class, 'release']);
 
 Route::middleware(EnsureRole::class . ':admin')->group(function () {
     Route::post('/payroll-runs/{payrollRun}/approve', [PayrollRunController::class, 'approve']);
