@@ -12,13 +12,14 @@ use App\Http\Middleware\ApiKey;
 use App\Http\Controllers\PayrollRunController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\LogActivity;
 
     Route::get('/health', fn () => ['status' => 'ok']);
-    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware(['throttle:10,1', LogActivity::class]);
 
     Route::post('/attendance-events', [AttendanceEventController::class, 'store'])
     ->middleware([ApiKey::class, 'throttle:120,1']);
-    Route::middleware('auth:sanctum')->group(function () {
+        Route::middleware(['auth:sanctum', LogActivity::class])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -61,6 +62,7 @@ use App\Http\Middleware\EnsureRole;
     Route::put('/contribution-rates/{type}', [\App\Http\Controllers\ContributionRateController::class, 'update']);
     Route::post('/claims/{claim}/approve', [\App\Http\Controllers\ClaimController::class, 'approve']);
     Route::post('/claims/{claim}/reject', [\App\Http\Controllers\ClaimController::class, 'reject']);
+    Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index']);
 
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
     Route::middleware(EnsureRole::class . ':admin')->group(function () {

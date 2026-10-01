@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Payroll from './pages/Payroll'
-import Placeholder from './pages/Placeholder'
 import PayrollSettings from './pages/PayrollSettings'
 import EmployeeData from './pages/EmployeeData'
 import Attendance from './pages/Attendance'
@@ -14,6 +13,7 @@ import CompanyBenefits from './pages/CompanyBenefits'
 import Enrollments from './pages/Enrollments'
 import Loans from './pages/Loans'
 import Claims from './pages/Claims'
+import AuditLogs from './pages/AuditLogs'
 import ClaimTypes from './pages/ClaimTypes'
 import Login from './pages/Login'
 import { isLoggedIn } from './lib/auth'
@@ -39,7 +39,7 @@ export default function App() {
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/payroll/runs" element={<Payroll />} />
         <Route path="/payroll/settings" element={<PayrollSettings />} />
-        <Route path="/audit-logs" element={<Placeholder title="Logs & audit" subtitle="System activity trail" />} />
+        <Route path="/audit-logs" element={<AuditLogs />} />
         <Route path="/compensation/grades" element={<SalaryGrades />} />
         <Route path="/compensation/adjustments" element={<Adjustments />} />
         <Route path="/benefits/government" element={<GovernmentContributions />} />
