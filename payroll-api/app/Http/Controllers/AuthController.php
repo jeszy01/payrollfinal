@@ -23,7 +23,7 @@ class AuthController extends Controller
     }
 
     // OTP switched off: same behavior as before.
-    if (! config('services.otp_enabled')) {
+        if (! config('services.otp_enabled') || ! in_array($user->role, ['admin', 'hr'], true)) {
         return $this->issueToken($user);
     }
 

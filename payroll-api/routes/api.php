@@ -16,6 +16,7 @@ use App\Http\Middleware\LogActivity;
 
     Route::get('/health', fn () => ['status' => 'ok']);
     Route::post('/login', [AuthController::class, 'login'])->middleware(['throttle:10,1', LogActivity::class]);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware(['throttle:10,1', LogActivity::class]);
 
     Route::post('/attendance-events', [AttendanceEventController::class, 'store'])
     ->middleware([ApiKey::class, 'throttle:120,1']);
@@ -65,7 +66,7 @@ use App\Http\Middleware\LogActivity;
     Route::post('/claims/{claim}/reject', [\App\Http\Controllers\ClaimController::class, 'reject']);
     Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index']);
 
-    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
+  
     Route::middleware(EnsureRole::class . ':admin')->group(function () {
     Route::apiResource('users', UserController::class)->except(['show']);
 });
