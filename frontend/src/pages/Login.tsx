@@ -1,10 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Lock } from 'lucide-react'
+import { Eye, EyeOff, Landmark, LogIn, Lock, Mail, Receipt, Wallet } from 'lucide-react'
 import { isLoggedIn, login, verifyOtp } from '../lib/auth'
 
-const field =
-  'w-full rounded-xl border bg-[var(--card)] px-4 py-3 text-sm outline-none focus:border-[var(--brand)]'
+const field ='w-full rounded-xl border bg-[var(--card)] px-4 py-3 text-sm outline-none focus:border-[var(--brand)]'
+  
+  const features = [
+  { icon: Wallet, text: 'Automated payroll runs' },
+  { icon: Landmark, text: 'SSS, PhilHealth & Pag-IBIG' },
+  { icon: Receipt, text: 'Claims & reimbursements' },
+]
 
 export default function Login() {
   const navigate = useNavigate()
@@ -63,50 +68,87 @@ export default function Login() {
       setCooldown(60)
     })
 
-  return (
-    <div className="grid min-h-screen lg:grid-cols-2" style={{ background: 'var(--bg-page)' }}>
+   return (
+    <div className="grid min-h-screen grid-rows-[auto_1fr] lg:grid-cols-2 lg:grid-rows-1" style={{ background: 'var(--bg-page)' }}>
+      {/* Left / top banner */}
       <div
-        className="hidden flex-col justify-between p-12 text-white lg:flex"
-        style={{ background: 'linear-gradient(180deg, #2b4fd0 0%, #1a2f8a 100%)' }}
+        className="flex flex-col justify-between gap-8 p-6 text-white lg:p-12"
+        style={{
+          background:
+            'radial-gradient(circle at 20% 0%, #4a6ee0 0%, transparent 55%), linear-gradient(180deg, #2b4fd0 0%, #1a2f8a 100%)',
+        }}
       >
-        <div>
-          <p className="text-lg font-extrabold">Archon Nell Incorporated</p>
-          <p className="text-sm text-white/70">Payroll &amp; Benefits Management</p>
+        <div className="inline-flex w-fit rounded-2xl bg-white px-4 py-2 shadow-lg">
+          <img src="/logo.png" alt="Archon Nell Incorporated" className="h-10 w-auto lg:h-14" />
         </div>
-        <p className="text-xs text-white/50">© 2026 Archon Nell Incorporated</p>
+
+        <div>
+          <h2 className="text-3xl font-extrabold leading-tight lg:text-5xl">
+            Payroll &amp; Benefits,
+            <br />
+            <span className="text-white/60">simplified.</span>
+          </h2>
+          <p className="mt-3 max-w-md text-sm text-white/75 lg:mt-5 lg:text-base">
+            Attendance, payroll, benefits, and claims in one system.
+          </p>
+          <ul className="mt-8 hidden space-y-3 lg:block">
+            {features.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3 text-sm font-semibold">
+                <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-white/10">
+                  <Icon size={18} />
+                </span>
+                {text}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="hidden text-xs text-white/50 lg:block">© 2026 Archon Nell Incorporated</p>
       </div>
 
-      <div className="grid place-items-center p-6">
+      {/* Form */}
+      <div className="grid place-items-center p-6 lg:p-12">
         <form
           onSubmit={step === 'credentials' ? submitCredentials : submitCode}
-          className="w-full max-w-sm"
+          className="w-full max-w-md"
         >
+          <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#e4eaff] px-3 py-1.5 text-xs font-semibold text-[var(--brand)]">
+            <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+            Secure Sign In
+          </span>
+
           <h1 className="text-3xl font-extrabold">
-            {step === 'credentials' ? 'Sign in' : 'Verification code'}
+            {step === 'credentials' ? 'Welcome back' : 'Verification code'}
           </h1>
-          {step === 'otp' && (
-            <p className="mb-6 mt-2 text-sm text-[var(--muted)]">Sent to {email}</p>
-          )}
+          <p className="mb-6 mt-2 text-sm text-[var(--muted)]">
+            {step === 'credentials' ? 'Sign in to continue.' : `Sent to ${email}`}
+          </p>
 
           {step === 'credentials' ? (
-            <div className="mt-6">
-              <label className="text-xs font-semibold text-[var(--muted)]">Email</label>
-              <input
-                type="email"
-                required
-                autoFocus
-                className={`${field} mb-4 mt-1`}
-                style={{ borderColor: 'var(--line)' }}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              <label className="text-xs font-semibold text-[var(--muted)]">Password</label>
+            <div>
+              <label className="text-sm font-semibold">Email</label>
               <div className="relative mb-4 mt-1">
+                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
+                <input
+                  type="email"
+                  required
+                  autoFocus
+                  placeholder="Enter your email"
+                  className={`${field} pl-11`}
+                  style={{ borderColor: 'var(--line)' }}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              <label className="text-sm font-semibold">Password</label>
+              <div className="relative mb-4 mt-1">
+                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
                 <input
                   type={show ? 'text' : 'password'}
                   required
-                  className={`${field} pr-11`}
+                  placeholder="Enter your password"
+                  className={`${field} pl-11 pr-11`}
                   style={{ borderColor: 'var(--line)' }}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -146,8 +188,8 @@ export default function Login() {
             disabled={loading || (step === 'otp' && code.length !== 6)}
             className="btn-primary w-full justify-center disabled:opacity-60"
           >
-            <Lock size={16} />
-            {loading ? 'Please wait...' : step === 'credentials' ? 'Sign in' : 'Verify'}
+            <LogIn size={18} />
+            {loading ? 'Please wait...' : step === 'credentials' ? 'Sign In' : 'Verify'}
           </button>
 
           {step === 'otp' && (
@@ -172,8 +214,13 @@ export default function Login() {
               </button>
             </div>
           )}
+
+          <p className="mt-8 text-center text-xs text-[var(--muted)] lg:hidden">
+            © 2026 Archon Nell Incorporated
+          </p>
         </form>
       </div>
     </div>
-  )
-}
+  ) 
+  
+      }
