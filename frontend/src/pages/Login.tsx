@@ -81,14 +81,20 @@ export default function Login() {
        <span />
 
         <div>
-        <div className="flex flex-col items-center text-center">
- <img
-  src="/logo.png"
-  alt="Archon Nell Incorporated"
-  className="w-56 lg:w-72"
-  style={{ filter: 'drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px #fff)' }}
-/>
-  <h2 className="mt-5 text-xl font-extrabold lg:text-2xl">Archon Nell Incorporated</h2>
+      <div className="flex items-center justify-center gap-4">
+  <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border border-white/25 bg-white shadow-lg shadow-black/20 lg:h-24 lg:w-24">
+    <img
+      src="/logo_mark.png"
+      alt="Archon Nell Incorporated"
+      className="h-14 w-14 object-contain lg:h-[68px] lg:w-[68px]"
+    />
+  </div>
+  <div className="leading-tight">
+    <h2 className="text-3xl font-extrabold text-white lg:text-4xl">Archon Nell</h2>
+    <p className="mt-1 text-xs font-bold uppercase tracking-[0.3em] text-[#a9b9f0] lg:text-sm">
+      Incorporated
+    </p>
+  </div>
 </div>
           <ul className="mt-8 hidden space-y-3 lg:block">
             {features.map(({ icon: Icon, text }) => (
