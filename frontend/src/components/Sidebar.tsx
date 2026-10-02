@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight,HeartPulse, LayoutGrid, Receipt, TrendingUp, Users } from 'lucide-react'
 import { currentUser } from '../lib/auth'
-import BrandMark from './BrandMark'
+
 
 type Props = { collapsed: boolean; onToggle: () => void; mobileOpen?: boolean; onClose?: () => void }
 
@@ -69,15 +69,30 @@ export default function Sidebar({ collapsed: collapsedProp, onToggle, mobileOpen
       } ${collapsed ? 'md:w-[76px]' : 'md:w-[274px]'}`}
       style={{ background: 'linear-gradient(180deg, #2b4fd0 0%, #1a2f8a 100%)' }}
     >
-          <Link to="/" className="flex items-center gap-3 px-5 py-6">
-        <BrandMark />
-        {!collapsed && (
-          <div className="flex flex-col leading-tight">
-            <span className="text-[17px] font-bold text-white">Archon Nell</span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/60">Incorporated</span>
-          </div>
-        )}
-      </Link>
+         <Link to="/" className="flex items-center gap-3 px-5 py-6">
+  <div
+    className="grid h-[48px] w-[48px] shrink-0 place-items-center rounded-xl border border-white/30"
+    style={{
+      background: 'linear-gradient(180deg, #4766d8 0%, #3350bd 100%)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,.35), 0 4px 10px rgba(0,0,0,.25)',
+    }}
+  >
+    <img
+      src="/logo_mark.png"
+      alt="Archon Nell Incorporated"
+      className="h-9 w-9 object-contain"
+      style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,.35))' }}
+    />
+  </div>
+  {!collapsed && (
+    <div className="leading-none">
+      <span className="block text-[20px] font-extrabold text-white">Archon Nell</span>
+      <span className="mt-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-[#aab8ee]">
+        Incorporated
+      </span>
+    </div>
+  )}
+</Link>
 
 <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <NavLink
