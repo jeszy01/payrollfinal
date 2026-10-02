@@ -24,6 +24,8 @@ use App\Http\Controllers\OvertimeController;
     Route::middleware(['auth:sanctum', LogActivity::class])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::apiResource('holidays', \App\Http\Controllers\HolidayController::class)->except(['show']);
+
 
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
     Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll']);

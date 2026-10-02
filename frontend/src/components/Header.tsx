@@ -27,9 +27,12 @@ export default function Header({ dark, onToggleTheme, onMenu }: Props) {
 
   return (
     <header className="hd">
-             <Link to="/notifications" className="hd-icon" aria-label="Notifications">
-          <Bell size={18} />
-        </Link>
+                  <button className="hd-icon md:hidden" onClick={onMenu} aria-label="Open menu">
+        <Menu size={18} />
+      </button>
+      <Link to="/notifications" className="hd-icon" aria-label="Notifications">
+        <Bell size={18} />
+      </Link>
       <label className="hd-search">
         <Search size={17} />
         <input
@@ -39,8 +42,7 @@ export default function Header({ dark, onToggleTheme, onMenu }: Props) {
       </label>
 
       <div className="flex items-center gap-3">
-        <button className="hd-icon" aria-label="Notifications">
-          <Bell size={18} />
+      
         </button>
         <button className="hd-icon" onClick={onToggleTheme} aria-label="Toggle theme">
           {dark ? <Sun size={18} /> : <Moon size={18} />}
