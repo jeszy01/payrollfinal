@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { LogOut, Monitor, Smartphone, Trash2 } from 'lucide-react'
-import { listDevices, removeDevice, removeOtherDevices, type Device } from '../lib/Devices'
+import { listDevices, removeDevice, removeOtherDevices, type Device } from '../lib/devices'
 
 function ago(iso: string | null) {
   if (!iso) return 'Never'
