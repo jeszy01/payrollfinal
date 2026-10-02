@@ -83,8 +83,10 @@ class PayrollRunController extends Controller
         }
 
         // Only attendance not yet included in a payroll run
-        $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])
-            ->whereNull('payroll_run_id')->get();
+       $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])
+    ->whereNull('payroll_run_id')
+    ->whereIn('employee_id', Employee::where('status', 'Active')->select('id'))
+    ->get();
 
         $open = $records->filter(fn ($r) => DayCalculator::compute($r)['status'] === 'working')->count();
         if ($open > 0) {
