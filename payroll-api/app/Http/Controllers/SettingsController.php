@@ -14,7 +14,7 @@ class SettingsController extends Controller
             'shiftEnd' => $s->shift_end,
             'paidHoursPerDay' => $s->paid_hours_per_day,
             'overtimeMultiplier' => $s->overtime_multiplier,
-            'roundingMinutes' => $s->rounding_minutes,
+            'otThresholdMinutes' => $s->ot_threshold_minutes,
             'workingDaysPerMonth' => $s->working_days_per_month,
             'cutoffDay' => $s->cutoff_day,
         ];
@@ -33,6 +33,7 @@ class SettingsController extends Controller
             'paidHoursPerDay' => 'sometimes|numeric|min:0|max:24',
             'overtimeMultiplier' => 'sometimes|numeric|min:1|max:5',
             'roundingMinutes' => 'sometimes|integer|min:1|max:60',
+                        'otThresholdMinutes' => 'sometimes|integer|min:0|max:120',
             'workingDaysPerMonth' => 'sometimes|integer|min:1|max:31',
             'cutoffDay' => 'sometimes|integer|min:1|max:28',
         ]);
@@ -43,6 +44,7 @@ class SettingsController extends Controller
             'paidHoursPerDay' => 'paid_hours_per_day',
             'overtimeMultiplier' => 'overtime_multiplier',
             'roundingMinutes' => 'rounding_minutes',
+            'otThresholdMinutes' => 'ot_threshold_minutes',
             'workingDaysPerMonth' => 'working_days_per_month',
             'cutoffDay' => 'cutoff_day',
         ];

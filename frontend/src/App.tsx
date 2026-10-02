@@ -20,6 +20,8 @@ import Devices from './pages/Devices'
 import { isLoggedIn } from './lib/auth'
 import { useSessionWatch } from './lib/useSessionWatch'
 import UserManagement from './pages/UserManagement'
+import Notifications from './pages/Notifications'
+import Overtime from './pages/Overtime'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   useSessionWatch()
@@ -42,8 +44,9 @@ export default function App() {
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/payroll/runs" element={<Payroll />} />
         <Route path="/payroll/settings" element={<PayrollSettings />} />
-        <Route path="/audit-logs" element={<AuditLogs />} />
-        <Route path="/devices" element={<Devices />} />
+        <Route path="/audit-logs" element={<Devices />} />
+        <Route path="/activity-logs" element={<AuditLogs />} />
+        <Route path="/devices" element={<Navigate to="/audit-logs" replace />} />
         <Route path="/compensation/grades" element={<SalaryGrades />} />
         <Route path="/compensation/adjustments" element={<Adjustments />} />
         <Route path="/benefits/government" element={<GovernmentContributions />} />
@@ -54,6 +57,8 @@ export default function App() {
         <Route path="/claims" element={<Claims />} />
         <Route path="/claims/types" element={<ClaimTypes />} />
         <Route path="/settings" element={<UserManagement />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/overtime" element={<Overtime />} />
       </Route>
     </Routes>
   )

@@ -51,6 +51,7 @@ export async function applyRecord(
         timeOut: patch.timeOut,
         absent: patch.absent,
         archived: patch.archived,
+        otReason: patch.otReason,
       }),
     })
   )

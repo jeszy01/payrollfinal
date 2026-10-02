@@ -12,7 +12,8 @@ const groups = [
     icon: Banknote,
     base: '/payroll',
     links: [
-      ['/payroll/runs', 'Payroll Runs'],
+            ['/payroll/runs', 'Payroll Runs'],
+      ['/overtime', 'Overtime'],
       ['/payroll/settings', 'Payroll Settings'],
     ],
   },
@@ -120,7 +121,7 @@ export default function Sidebar({ collapsed: collapsedProp, onToggle, mobileOpen
                 <Icon size={20} />
                 {!collapsed && (
                   <>
-                                       <span className="whitespace-nowrap">{g.label}</span>
+             <span className="whitespace-nowrap">{g.label}</span>
                     <ChevronDown size={14} className={`ml-auto shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </>
                 )}

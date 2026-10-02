@@ -12,6 +12,7 @@ export type AttendanceRecord = {
   absent?: boolean
   archived?: boolean
   payrollRunId?: string | null
+  otReason?: string | null
 }
 
 export type DayStatus = 'absent' | 'working' | 'final'

@@ -7,6 +7,8 @@ use App\Models\ClaimType;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Employee;
+use App\Services\Notifier;
 
 class ClaimController extends Controller
 {
@@ -83,6 +85,8 @@ class ClaimController extends Controller
             'encoded_by' => $request->user()->id,
         ]);
 
+        Notifier::send('claim_submitted', 'New claim submitted', "{$this->who($claim)} submitted a claim of " . number_format($claim->amount, 2) . '.', 'all', '/claims');
+
         return response()->json($this->format($claim), 201);
     }
 
@@ -102,6 +106,7 @@ class ClaimController extends Controller
             return $this->fail('Only a pending claim can be approved.');
         }
         $claim->update(['status' => 'approved', 'decided_by' => $request->user()->id, 'decided_at' => now()]);
+                Notifier::send('claim_approved', 'Claim approved', "{$this->who($claim)}'s claim was approved.", 'all', '/claims');
         return $this->format($claim);
     }
 
@@ -117,6 +122,7 @@ class ClaimController extends Controller
             'decided_by' => $request->user()->id,
             'decided_at' => now(),
         ]);
+        Notifier::send('claim_rejected', 'Claim rejected', "{$this->who($claim)}'s claim was rejected.", 'all', '/claims');
         return $this->format($claim);
     }
 
@@ -135,6 +141,7 @@ class ClaimController extends Controller
             'paid_at' => $data['paidAt'],
             'payment_ref' => $data['paymentRef'] ?? null,
         ]);
+        Notifier::send('claim_paid', 'Claim paid', "{$this->who($claim)}'s claim was marked as paid.", 'all', '/claims');
         return $this->format($claim);
     }
 
@@ -145,5 +152,10 @@ class ClaimController extends Controller
         }
         $claim->delete();
         return response()->noContent();
+    }
+
+        private function who(Claim $c): string
+    {
+        return Employee::find($c->employee_id)?->name ?? 'An employee';
     }
 }

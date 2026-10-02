@@ -86,6 +86,9 @@ class AttendanceController extends Controller
             }
         }
 
+                $prevStatus = $record->ot_status;
+        $prevMinutes = (int) $record->ot_minutes;
+
         // OT: reason is required only when there is OT (6+ min past shift end).
         if (! DayCalculator::applyOvertime($record, $data['otReason'] ?? null)) {
             return response()->json([
@@ -95,8 +98,48 @@ class AttendanceController extends Controller
             ], 422);
         }
 
-        $record->save();
+               $record->save();
+
+        if ($record->ot_status === 'pending' && ($prevStatus !== 'pending' || $prevMinutes !== (int) $record->ot_minutes)) {
+            \App\Services\Notifier::send('ot_pending', 'OT pending approval', "{$record->employee_name} has overtime on {$record->date->format('M d')}.", 'all', '/overtime');
+        }
 
         return response()->json($this->format($record), $wasNew ? 201 : 200);
+    }
+
+        public function overtime(Request $request)
+    {
+        return AttendanceRecord::whereNotNull('ot_status')
+            ->orderByDesc('date')
+            ->get()
+            ->map(fn ($r) => $this->format($r));
+    }
+
+    private function review(Request $request, AttendanceRecord $record, string $status, ?string $remarks)
+    {
+        if ($record->ot_status !== 'pending') {
+            return response()->json(['message' => 'Only pending OT can be reviewed.'], 422);
+        }
+
+        $record->update([
+            'ot_status' => $status,
+            'ot_remarks' => $remarks,
+            'ot_reviewed_by' => $request->user()->id,
+            'ot_reviewed_at' => now(),
+        ]);
+
+        return $this->format($record);
+    }
+
+    public function approveOvertime(Request $request, AttendanceRecord $record)
+    {
+        return $this->review($request, $record, 'approved', null);
+    }
+
+    public function rejectOvertime(Request $request, AttendanceRecord $record)
+    {
+        $data = $request->validate(['remarks' => 'required|string|max:255']);
+
+        return $this->review($request, $record, 'rejected', $data['remarks']);
     }
 }

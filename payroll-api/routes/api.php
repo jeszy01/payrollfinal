@@ -25,6 +25,10 @@ use App\Http\Controllers\OvertimeController;
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll']);
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read']);
+
     Route::post('/ai/chat', [\App\Http\Controllers\AiController::class, 'chat'])
     ->middleware([EnsureRole::class . ':admin,hr', 'throttle:20,1']);
 

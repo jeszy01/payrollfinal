@@ -6,9 +6,10 @@ export type PayrollSettings = {
   shiftEnd: string // HH:mm
   paidHoursPerDay: number
   overtimeMultiplier: number
-  roundingMinutes: number 
-  workingDaysPerMonth: number // pang-compute ng daily rate (monthly ÷ araw)
-  cutoffDay: number // huling araw ng unang cutoff (hal. 15 = 1–15 at 16–katapusan)// 60 = round up to the hour, 1 = exact minutes
+  roundingMinutes: number // 60 = round up to the hour, 1 = exact minutes
+  otThresholdMinutes: number
+  workingDaysPerMonth: number
+  cutoffDay: number
 }
 
 // Fallback values used until the API responds.
@@ -18,6 +19,7 @@ export const DEFAULT_SETTINGS: PayrollSettings = {
   paidHoursPerDay: 8,
   overtimeMultiplier: 1.25,
   roundingMinutes: 60,
+  otThresholdMinutes: 5,
   workingDaysPerMonth: 22,
   cutoffDay: 15,
 }
@@ -57,6 +59,8 @@ export async function updateSettings(patch: Partial<PayrollSettings>) {
   } catch (err) {
     console.error(err)
     settings = previous
+    emit()
+    throw err
   }
   emit()
 }

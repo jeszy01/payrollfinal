@@ -11,7 +11,12 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   </div>
 )
 
-type NumKey = 'paidHoursPerDay' | 'overtimeMultiplier' | 'workingDaysPerMonth' | 'cutoffDay'
+type NumKey =
+  | 'paidHoursPerDay'
+  | 'overtimeMultiplier'
+  | 'otThresholdMinutes'
+  | 'workingDaysPerMonth'
+  | 'cutoffDay'
 
 export default function PayrollSettings() {
   const s = useSettings()
@@ -24,6 +29,7 @@ export default function PayrollSettings() {
     roundingMinutes: s.roundingMinutes,
     paidHoursPerDay: String(s.paidHoursPerDay),
     overtimeMultiplier: String(s.overtimeMultiplier),
+    otThresholdMinutes: String(s.otThresholdMinutes),
     workingDaysPerMonth: String(s.workingDaysPerMonth),
     cutoffDay: String(s.cutoffDay),
   })
@@ -43,7 +49,10 @@ export default function PayrollSettings() {
       workingDaysPerMonth: Number(d.workingDaysPerMonth),
       cutoffDay: Number(d.cutoffDay),
     }
-    if (Object.values(nums).some((n) => !(n > 0)) || !d.shiftStart || !d.shiftEnd) {
+    const ot = Number(d.otThresholdMinutes)
+    const invalid =
+      Object.values(nums).some((n) => !(n > 0)) || !(ot >= 0) || !d.shiftStart || !d.shiftEnd
+    if (invalid) {
       alert('Please enter valid values.')
       return
     }
@@ -53,6 +62,7 @@ export default function PayrollSettings() {
         shiftStart: d.shiftStart,
         shiftEnd: d.shiftEnd,
         roundingMinutes: d.roundingMinutes,
+        otThresholdMinutes: ot,
         ...nums,
       })
       setEditing(false)
@@ -105,6 +115,7 @@ export default function PayrollSettings() {
         </Field>
         <Field label="Paid hours per day">{num('paidHoursPerDay', '0.5')}</Field>
         <Field label="Overtime multiplier">{num('overtimeMultiplier', '0.01')}</Field>
+        <Field label="OT threshold (minutes)">{num('otThresholdMinutes', '1')}</Field>
         <Field label="Late / undertime / overtime rounding">
           <select
             className={input}

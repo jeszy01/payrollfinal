@@ -6,8 +6,6 @@ use App\Models\AttendanceRecord;
 
 class DayCalculator
 {
-    /** OT starts only when time-out is MORE than this many minutes past shift end (6+ min). */
-    public const OT_THRESHOLD_MINUTES = 5;
 
     private static function mins(string $hhmm): int
     {
@@ -22,10 +20,12 @@ class DayCalculator
             return 0;
         }
 
-        $end = ($r->rules ?: [])['shiftEnd'] ?? '17:00';
+              $rules = $r->rules ?: [];
+        $end = $rules['shiftEnd'] ?? '17:00';
+        $threshold = (int) ($rules['otThresholdMinutes'] ?? 5); // 5 = for old records saved before this setting existed
         $over = self::mins($r->time_out) - self::mins($end);
 
-        return $over > self::OT_THRESHOLD_MINUTES ? $over : 0;
+        return $over > $threshold ? $over : 0;
     }
 
     /**

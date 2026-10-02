@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class PayrollSetting extends Model
 {
-    protected $fillable = [
+       protected $fillable = [
         'shift_start', 'shift_end', 'paid_hours_per_day',
         'overtime_multiplier', 'rounding_minutes',
+        'working_days_per_month', 'cutoff_day', 'ot_threshold_minutes',
     ];
 
     protected $casts = [
@@ -17,6 +18,7 @@ class PayrollSetting extends Model
         'rounding_minutes' => 'integer',
         'working_days_per_month' => 'integer',
         'cutoff_day' => 'integer',
+        'ot_threshold_minutes' => 'integer',
     ];
 
     /** Iisang row lang ang settings; gagawa ng default kung wala pa. */

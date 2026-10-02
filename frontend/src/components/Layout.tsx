@@ -23,7 +23,8 @@ const titles: Record<string, [string, string]> = {
 '/benefits/loans': ['Loans & Advances', 'Loans and cash advances'],
 '/claims': ['Claims & Reimbursement', 'Submit, approve & track'],
 '/claims/types': ['Claim Types', 'Limits and requirements'],
-
+'/notifications': ['Notifications', 'All notifications'],
+  '/overtime': ['Overtime', 'Review and approve overtime'],
 }
 
 // Pangalan ng group sa sidebar, para sa breadcrumb
@@ -45,6 +46,7 @@ const groups: Record<string, string> = {
 '/benefits/loans': 'HMO & Benefits',
 '/claims': 'Claims & Reimbursement',
 '/claims/types': 'Claims & Reimbursement',
+'/overtime': 'Payroll',
 }
 
 export default function Layout() {

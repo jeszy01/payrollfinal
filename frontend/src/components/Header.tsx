@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, ChevronDown, LogOut, Menu, Moon, ScrollText, Search, Sun, UserCog } from 'lucide-react'
+import { Activity, Bell, ChevronDown, LogOut, Menu, Moon, ScrollText, Search, Sun, UserCog } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { currentUser, logout } from '../lib/auth'
 
@@ -27,9 +27,9 @@ export default function Header({ dark, onToggleTheme, onMenu }: Props) {
 
   return (
     <header className="hd">
-      <button className="hd-icon md:hidden" onClick={onMenu} aria-label="Open menu">
-        <Menu size={18} />
-      </button>
+             <Link to="/notifications" className="hd-icon" aria-label="Notifications">
+          <Bell size={18} />
+        </Link>
       <label className="hd-search">
         <Search size={17} />
         <input
@@ -72,6 +72,11 @@ export default function Header({ dark, onToggleTheme, onMenu }: Props) {
               <Link to="/audit-logs" className={menuItem} onClick={() => setMenu(false)}>
                 <ScrollText size={16} /> Logs &amp; audit
               </Link>
+                            {me?.role === 'admin' && (
+                <Link to="/activity-logs" className={menuItem} onClick={() => setMenu(false)}>
+                  <Activity size={16} /> Activity Logs
+                </Link>
+              )}
               <button
                 className={`${menuItem} text-red-500`}
                 onClick={async () => {
