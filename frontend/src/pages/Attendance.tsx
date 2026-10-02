@@ -41,14 +41,7 @@ export default function Attendance() {
   return (
     <div className="min-h-screen p-7" style={{ background: 'var(--bg-page)', color: 'var(--ink)' }}>
       <div className="mx-auto max-w-2xl">
-        <div className="mb-6 flex items-start justify-between">
-                   <div className="flex items-center gap-3">
-            <img src="/archon-nell-icon.png" alt="Archon Nell" className="size-12 object-contain" />
-            <div>
-              <h1 className="pg-title">Attendance (Demo)</h1>
-              <p className="pg-sub">Employee time in / time out</p>
-            </div>
-          </div>
+             <div className="mb-6 flex justify-end">
           <Link to="/payroll/runs" className="btn-outline">← Payroll Runs</Link>
         </div>
 
