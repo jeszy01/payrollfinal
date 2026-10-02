@@ -57,7 +57,7 @@ class PayrollRunController extends Controller
 
     public function index()
     {
-        return PayrollRun::orderByDesc('period_start')->get()->map(fn ($r) => $this->format($r));
+        return PayrollRun::orderByDesc('created_at')->get()->map(fn ($r) => $this->format($r));
     }
 
     public function show(PayrollRun $payrollRun)
@@ -254,9 +254,7 @@ class PayrollRunController extends Controller
     // draft/approved only; attendance returns to Active
     public function destroy(PayrollRun $payrollRun)
     {
-        if ($payrollRun->status === 'released') {
-            return response()->json(['message' => 'A released payroll is locked and cannot be deleted.'], 422);
-        }
+
         DB::transaction(function () use ($payrollRun) {
             AttendanceRecord::where('payroll_run_id', $payrollRun->id)->update(['payroll_run_id' => null]);
             Claim::where('payroll_run_id', $payrollRun->id)->update(['payroll_run_id' => null]);
