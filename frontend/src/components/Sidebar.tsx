@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import { Banknote, ChevronDown, ChevronsLeft, ChevronsRight,HeartPulse, LayoutGrid, Receipt, TrendingUp, Users } from 'lucide-react'
 import { currentUser } from '../lib/auth'
+import BrandMark from './BrandMark'
 
 type Props = { collapsed: boolean; onToggle: () => void; mobileOpen?: boolean; onClose?: () => void }
 
@@ -11,13 +12,12 @@ const groups = [
     label: 'Payroll',
     icon: Banknote,
     base: '/payroll',
-    links: [
-            ['/payroll/runs', 'Payroll Runs'],
-      ['/overtime', 'Overtime'],
-      ['/payroll/settings', 'Payroll Settings'],
-            ['/overtime', 'Overtime'],
-      ['/payroll/holidays', 'Holiday Calendar'],
-    ],
+links: [
+  ['/payroll/runs', 'Payroll Runs'],
+  ['/overtime', 'Overtime'],
+  ['/payroll/settings', 'Payroll Settings'],
+  ['/payroll/holidays', 'Holiday Calendar'],
+],
   },
   {
     key: 'compensation',
@@ -71,10 +71,8 @@ export default function Sidebar({ collapsed: collapsedProp, onToggle, mobileOpen
       } ${collapsed ? 'md:w-[76px]' : 'md:w-[274px]'}`}
       style={{ background: 'linear-gradient(180deg, #2b4fd0 0%, #1a2f8a 100%)' }}
     >
-      <Link to="/" className="flex items-center gap-3 px-5 py-6">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white p-1 shadow-md">
-          <img src="/archon-nell-icon.png" alt="Archon Nell" className="h-full w-full object-contain" />
-        </span>
+          <Link to="/" className="flex items-center gap-3 px-5 py-6">
+        <BrandMark />
         {!collapsed && (
           <div className="flex flex-col leading-tight">
             <span className="text-[17px] font-bold text-white">Archon Nell</span>
