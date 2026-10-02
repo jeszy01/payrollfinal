@@ -16,20 +16,10 @@ export default function Attendance() {
   const [busy, setBusy] = useState(false)
   const date = todayStr()
 
-   const send = async (employeeId: string, body: Record<string, unknown>) => {
+     const send = async (employeeId: string, body: Record<string, unknown>) => {
     setBusy(true)
     try {
-      try {
-        await api('/attendance', { method: 'PUT', body: JSON.stringify({ employeeId, date, ...body }) })
-      } catch (e) {
-        if (!(e instanceof Error) || !e.message.includes('OT reason is required')) throw e
-        const reason = window.prompt('OT reason:')?.trim()
-        if (!reason) return
-        await api('/attendance', {
-          method: 'PUT',
-          body: JSON.stringify({ employeeId, date, ...body, otReason: reason }),
-        })
-      }
+      await api('/attendance', { method: 'PUT', body: JSON.stringify({ employeeId, date, ...body }) })
       window.dispatchEvent(new Event('attendance-changed'))
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Request failed')

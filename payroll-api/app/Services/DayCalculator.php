@@ -70,7 +70,8 @@ class DayCalculator
             return true;
         }
 
-        if ($reason === '') {
+        $r->ot_minutes = $ot;
+$r->ot_reason = $reason !== '' ? $reason : null;if ($reason === '') {
             return false;
         }
 
