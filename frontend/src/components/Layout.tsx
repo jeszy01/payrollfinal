@@ -8,7 +8,8 @@ import ArcChat from '../components/ArcChat'
 const titles: Record<string, [string, string]> = {
   '/': ['Dashboard', 'Overview'],
   '/payroll/runs': ['Payroll Management', 'Compute payroll and review payslips'],
-  '/audit-logs': ['Logs & audit', 'System activity trail'],
+  '/audit-logs': ['Logs & audit', 'Devices signed in to your account'],
+  '/activity-logs': ['Activity Logs', 'System activity trail'],
   '/settings': ['User Management', 'Accounts that can sign in to this system'],
   '/payroll/settings': ['Payroll Settings', 'Shift, overtime, and rounding rules'],
   '/employees': ['Employee Data', 'Manage employee records'],
@@ -31,6 +32,7 @@ const groups: Record<string, string> = {
   '/payroll/runs': 'Payroll',
   '/payroll/settings': 'Payroll',
   '/audit-logs': 'Insights',
+    '/activity-logs': 'Insights',
   '/settings': 'Insights',
   '/employees': 'Workspace',
 '/attendance': 'Payroll',

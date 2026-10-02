@@ -60,14 +60,8 @@ export default function Devices() {
   const others = devices.filter((d) => !d.current).length
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold">Devices</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Devices currently signed in to your account. Remove any you don't recognize.
-          </p>
-        </div>
+       <div className="w-full">
+      <div className="mb-6 flex justify-end">
         {others > 0 && (
           <button
             onClick={removeOthers}

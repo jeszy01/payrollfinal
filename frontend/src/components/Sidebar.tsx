@@ -69,13 +69,8 @@ export default function Sidebar({ collapsed: collapsedProp, onToggle, mobileOpen
       style={{ background: 'linear-gradient(180deg, #2b4fd0 0%, #1a2f8a 100%)' }}
     >
       <Link to="/" className="flex items-center gap-3 px-5 py-6">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white shadow-md">
-          <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
-            <ellipse cx="20" cy="20" rx="16" ry="6" stroke="#f59e0b" strokeWidth="2" />
-            <ellipse cx="20" cy="20" rx="16" ry="6" stroke="#a855f7" strokeWidth="2" transform="rotate(60 20 20)" />
-            <ellipse cx="20" cy="20" rx="16" ry="6" stroke="#3b82f6" strokeWidth="2" transform="rotate(120 20 20)" />
-            <circle cx="20" cy="20" r="3.5" fill="#22c55e" />
-          </svg>
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white p-1 shadow-md">
+          <img src="/archon-nell-icon.png" alt="Archon Nell" className="h-full w-full object-contain" />
         </span>
         {!collapsed && (
           <div className="flex flex-col leading-tight">
