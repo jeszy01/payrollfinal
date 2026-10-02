@@ -89,14 +89,8 @@ class AttendanceController extends Controller
                 $prevStatus = $record->ot_status;
         $prevMinutes = (int) $record->ot_minutes;
 
-        // OT: reason is required only when there is OT (6+ min past shift end).
-        if (! DayCalculator::applyOvertime($record, $data['otReason'] ?? null)) {
-            return response()->json([
-                'message' => 'OT reason is required.',
-                'requiresOtReason' => true,
-                'otMinutes' => DayCalculator::overtimeMinutes($record),
-            ], 422);
-        }
+               // OT is always saved as pending; the reason is optional.
+        DayCalculator::applyOvertime($record, $data['otReason'] ?? null);
 
                $record->save();
 

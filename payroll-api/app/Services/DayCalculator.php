@@ -49,41 +49,40 @@ class DayCalculator
      * Set the OT fields on the record (does not save).
      * Returns false when OT exists but no reason was given (caller should return 422).
      */
-    public static function applyOvertime(AttendanceRecord $r, ?string $reason): bool
-    {
-        $ot = self::overtimeMinutes($r);
+  /**
+ * Set the OT fields on the record (does not save).
+ * OT always becomes pending; the reason is optional.
+ */
+public static function applyOvertime(AttendanceRecord $r, ?string $reason): bool
+{
+    $ot = self::overtimeMinutes($r);
 
-        if ($ot === 0) {
-            $r->ot_minutes = 0;
-            $r->ot_reason = null;
-            $r->ot_status = null;
-            $r->ot_remarks = null;
-            $r->ot_reviewed_by = null;
-            $r->ot_reviewed_at = null;
-            return true;
-        }
-
-        $reason = trim((string) $reason);
-
-        // Same OT as before and no new reason: keep existing review state.
-        if ($reason === '' && $r->ot_status && (int) $r->ot_minutes === $ot) {
-            return true;
-        }
-
-        $r->ot_minutes = $ot;
-$r->ot_reason = $reason !== '' ? $reason : null;if ($reason === '') {
-            return false;
-        }
-
-        $r->ot_minutes = $ot;
-        $r->ot_reason = $reason;
-        $r->ot_status = 'pending';
+    if ($ot === 0) {
+        $r->ot_minutes = 0;
+        $r->ot_reason = null;
+        $r->ot_status = null;
         $r->ot_remarks = null;
         $r->ot_reviewed_by = null;
         $r->ot_reviewed_at = null;
-
         return true;
     }
+
+    // Same OT as before: keep the existing review state.
+    if ($r->ot_status && (int) $r->ot_minutes === $ot) {
+        return true;
+    }
+
+    $reason = trim((string) $reason);
+
+    $r->ot_minutes = $ot;
+    $r->ot_reason = $reason !== '' ? $reason : null;
+    $r->ot_status = 'pending';
+    $r->ot_remarks = null;
+    $r->ot_reviewed_by = null;
+    $r->ot_reviewed_at = null;
+
+    return true;
+}
 
     public static function compute(AttendanceRecord $r): array
     {
