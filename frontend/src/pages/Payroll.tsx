@@ -153,6 +153,15 @@ export default function Payroll() {
   const [slip, setSlip] = useState<PayslipRow | null>(null)
   const [review, setReview] = useState(false)
   const [ask, setAsk] = useState<{ title: string; message: string; onYes: () => void } | null>(null)
+  
+  // Demo only: manual days worked, kept in this browser
+  const [demoDays, setDemoDays] = useState<Record<string, number>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('demoDays') ?? '{}')
+    } catch {
+      return {}
+    }
+  })
 
   const records = useAttendance()
   const employees = useEmployees()
@@ -198,6 +207,25 @@ export default function Payroll() {
     }
   }
 
+    const editDays = (r: Row) => {
+    const v = window.prompt(`Days worked for ${r.name}:`, String(r.days))
+    if (v === null) return
+    const key = `${current.start}:${r.id}`
+    const next = { ...demoDays }
+    if (v.trim() === '') {
+      delete next[key]
+    } else {
+      const num = Number(v)
+      if (!Number.isFinite(num) || num < 0 || num > 31) {
+        alert('Please enter a valid number.')
+        return
+      }
+      next[key] = num
+    }
+    localStorage.setItem('demoDays', JSON.stringify(next))
+    setDemoDays(next)
+  }
+
   // Real-time calculation of the current cutoff
   const rows = useMemo<Row[]>(() => {
     return employees
@@ -221,11 +249,16 @@ export default function Payroll() {
           row.absent += c.absences
           row.otPay += c.overtimePay
         }
+              const o = demoDays[`${current.start}:${emp.id}`]
+        if (o !== undefined) {
+          row.days = o
+          row.gross = o * emp.dailyRate
+        }
         row.total = Math.max(0, row.gross - row.deduction) + row.otPay
         return row
       })
       .sort((a, b) => a.name.localeCompare(b.name))
-  }, [employees, records, current.start, current.end])
+  }, [employees, records, current.start, current.end, demoDays])
 
   const emptyMsg = tab === 'archived' && !shown ? 'No archived payroll yet.' : 'Loading...'
 
@@ -380,7 +413,11 @@ export default function Payroll() {
               {rows.map((r) => (
                 <tr key={r.id}>
                   <td className="font-bold">{r.name}</td>
-                  <td>{r.days}</td>
+                                    <td>
+                    <button className="cursor-pointer font-semibold hover:underline" onClick={() => editDays(r)}>
+                      {r.days}
+                    </button>
+                  </td>
                   <td>{hrs(r.late)}</td>
                   <td>{hrs(r.under)}</td>
                   <td>{hrs(r.over)}</td>

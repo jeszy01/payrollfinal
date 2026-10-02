@@ -15,6 +15,8 @@ const groups = [
             ['/payroll/runs', 'Payroll Runs'],
       ['/overtime', 'Overtime'],
       ['/payroll/settings', 'Payroll Settings'],
+            ['/overtime', 'Overtime'],
+      ['/payroll/holidays', 'Holiday Calendar'],
     ],
   },
   {

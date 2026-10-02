@@ -42,8 +42,6 @@ export default function Header({ dark, onToggleTheme, onMenu }: Props) {
       </label>
 
       <div className="flex items-center gap-3">
-      
-        </button>
         <button className="hd-icon" onClick={onToggleTheme} aria-label="Toggle theme">
           {dark ? <Sun size={18} /> : <Moon size={18} />}
         </button>

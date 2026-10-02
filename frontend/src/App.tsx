@@ -22,6 +22,7 @@ import { useSessionWatch } from './lib/useSessionWatch'
 import UserManagement from './pages/UserManagement'
 import Notifications from './pages/Notifications'
 import Overtime from './pages/Overtime'
+import Holidays from './pages/Holidays'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   useSessionWatch()
@@ -59,6 +60,7 @@ export default function App() {
         <Route path="/settings" element={<UserManagement />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/overtime" element={<Overtime />} />
+                <Route path="/payroll/holidays" element={<Holidays />} />
       </Route>
     </Routes>
   )

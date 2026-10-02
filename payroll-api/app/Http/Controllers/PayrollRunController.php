@@ -7,6 +7,7 @@ use App\Models\Claim;
 use App\Models\Employee;
 use App\Models\EmployeeLoan;
 use App\Models\Enrollment;
+use App\Models\Holiday;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
 use App\Services\ContributionCalculator;
@@ -64,7 +65,7 @@ class PayrollRunController extends Controller
         return $this->format($payrollRun->load('payslips'));
     }
 
-       public function store(Request $request)
+    public function store(Request $request)
     {
         // Cutoff always follows today's date
         $today = now('Asia/Manila');
@@ -92,9 +93,20 @@ class PayrollRunController extends Controller
             ], 422);
         }
 
+        // Records get locked into the run, so OT must be decided first or it would never be paid.
+        $pendingOt = $records->where('ot_status', 'pending')->count();
+        if ($pendingOt > 0) {
+            return response()->json([
+                'message' => "{$pendingOt} overtime request(s) are still pending. Approve or reject them before generating payroll.",
+            ], 422);
+        }
+
         $byEmployee = $records->groupBy('employee_id');
 
-        $run = DB::transaction(function () use ($data, $byEmployee, $records) {
+        $holidays = Holiday::whereBetween('date', [$data['periodStart'], $data['periodEnd']])
+            ->get()->keyBy(fn ($h) => $h->date->format('Y-m-d'));
+
+        $run = DB::transaction(function () use ($data, $byEmployee, $records, $holidays) {
             $run = PayrollRun::create([
                 'period_start' => $data['periodStart'],
                 'period_end' => $data['periodEnd'],
@@ -108,19 +120,27 @@ class PayrollRunController extends Controller
             $loans = EmployeeLoan::where('balance', '>', 0)
                 ->where('start_date', '<=', $data['periodEnd'])->get()->groupBy('employee_id');
 
-            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates, $enrollments, $loans, $claimsByEmployee) {
+            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates, $enrollments, $loans, $claimsByEmployee, $holidays) {
                 $s = ['days' => 0, 'late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0, 'gross' => 0.0, 'deduction' => 0.0, 'otPay' => 0.0];
 
                 foreach ($byEmployee->get($emp->id, collect()) as $r) {
                     $c = DayCalculator::compute($r);
                     if ($c['status'] !== 'absent') {
                         $s['days']++;
-                        $s['gross'] += $r->daily_rate ?? $emp->daily_rate;
+                        $dailyRate = $r->daily_rate ?? $emp->daily_rate;
+                        $s['gross'] += $dailyRate;
+                        $h = $holidays->get($r->date->format('Y-m-d'));
+                        if ($h) {
+                            $s['gross'] += $dailyRate * ($h->multiplier - 1);
+                        }
                         $s['deduction'] += $c['deduction'];
                     }
                     $s['late'] += $c['late'];
                     $s['under'] += $c['under'];
-                    $s['over'] += $c['over'];
+                    // Only approved OT counts (minutes and pay).
+                    if ($r->ot_status === 'approved') {
+                        $s['over'] += $c['over'];
+                    }
                     $s['absences'] += $c['absences'];
                     $s['otPay'] += $c['otPay'];
                 }
@@ -131,7 +151,7 @@ class PayrollRunController extends Controller
                 $sss = round(ContributionCalculator::employee($monthly, $rates['sss'] ?? null) / 2, 2);
                 $philhealth = round(ContributionCalculator::employee($monthly, $rates['philhealth'] ?? null) / 2, 2);
                 $pagIbig = round(ContributionCalculator::employee($monthly, $rates['pagibig'] ?? null) / 2, 2);
-                                $claims = round((float) $claimsByEmployee->get($emp->id, collect())->sum('amount'), 2);
+                $claims = round((float) $claimsByEmployee->get($emp->id, collect())->sum('amount'), 2);
 
                 $hmo = 0.0;
                 $allow = ['transport_allowance' => 0.0, 'rice_allowance' => 0.0];
@@ -178,7 +198,7 @@ class PayrollRunController extends Controller
                     'claims' => $claims,
                     'net_pay' => round(
                         $total + $allow['transport_allowance'] + $allow['rice_allowance']
-                      - $sss - $philhealth - $pagIbig - $hmo - array_sum($loanTotals) + $claims,
+                        - $sss - $philhealth - $pagIbig - $hmo - array_sum($loanTotals) + $claims,
                         2
                     ),
                     'employee_no' => $emp->employee_no,
@@ -202,6 +222,7 @@ class PayrollRunController extends Controller
             return response()->json(['message' => 'Only a draft payroll can be approved.'], 422);
         }
         $payrollRun->update(['status' => 'approved']);
+
         return $this->format($payrollRun->load('payslips'));
     }
 
@@ -219,18 +240,19 @@ class PayrollRunController extends Controller
                     ->get()
                     ->each(fn ($l) => $l->update(['balance' => max(0, $l->balance - $l->amortization)]));
             }
-                Claim::where('payroll_run_id', $payrollRun->id)->update([
+            Claim::where('payroll_run_id', $payrollRun->id)->update([
                 'status' => 'paid',
                 'paid_method' => 'payroll',
                 'paid_at' => now('Asia/Manila')->toDateString(),
             ]);
             $payrollRun->update(['status' => 'released']);
         });
+
         return $this->format($payrollRun->load('payslips'));
     }
 
-    // any status; attendance returns to Active, loan balances restored if released
-       public function destroy(PayrollRun $payrollRun)
+    // draft/approved only; attendance returns to Active
+    public function destroy(PayrollRun $payrollRun)
     {
         if ($payrollRun->status === 'released') {
             return response()->json(['message' => 'A released payroll is locked and cannot be deleted.'], 422);
@@ -241,6 +263,7 @@ class PayrollRunController extends Controller
             $payrollRun->payslips()->delete();
             $payrollRun->delete();
         });
+
         return response()->noContent();
     }
 }

@@ -25,6 +25,7 @@ const titles: Record<string, [string, string]> = {
 '/claims/types': ['Claim Types', 'Limits and requirements'],
 '/notifications': ['Notifications', 'All notifications'],
   '/overtime': ['Overtime', 'Review and approve overtime'],
+    '/payroll/holidays': ['Holiday Calendar', 'Regular and special holidays'],
 }
 
 // Pangalan ng group sa sidebar, para sa breadcrumb
@@ -47,6 +48,7 @@ const groups: Record<string, string> = {
 '/claims': 'Claims & Reimbursement',
 '/claims/types': 'Claims & Reimbursement',
 '/overtime': 'Payroll',
+  '/payroll/holidays': 'Payroll',
 }
 
 export default function Layout() {
