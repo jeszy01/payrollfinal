@@ -36,8 +36,11 @@ use App\Http\Controllers\OvertimeController;
 
     Route::post('/attendance-events', [AttendanceEventController::class, 'store'])
     ->middleware([ApiKey::class, 'throttle:120,1']);
-    Route::middleware(['auth:sanctum', LogActivity::class])->group(function () {
+   Route::middleware(['auth:sanctum', LogActivity::class])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/devices', [\App\Http\Controllers\DeviceController::class, 'index']);
+    Route::delete('/devices/others', [\App\Http\Controllers\DeviceController::class, 'destroyOthers']);
+    Route::delete('/devices/{id}', [\App\Http\Controllers\DeviceController::class, 'destroy']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::apiResource('holidays', \App\Http\Controllers\HolidayController::class)->except(['show']);
 
