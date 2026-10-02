@@ -37,7 +37,6 @@ links: [
     links: [
       ['/benefits/government', 'Government Contributions'],
       ['/benefits/hmo', 'HMO Plans'],
-      ['/benefits/company', 'Company Benefits'],
       ['/benefits/enrollments', 'Enrollments'],
           ['/benefits/loans', 'Loans & Advances'],
     ],

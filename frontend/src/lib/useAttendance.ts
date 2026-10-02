@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from './api'
 import type { AttendanceRecord } from './payroll'
 
+
 // Real-time gamit ang polling: nire-refresh ang data kada 3 segundo.
 // Papalitan ng WebSocket (Reverb) sa susunod.
 export function useAttendance(intervalMs = 3000) {

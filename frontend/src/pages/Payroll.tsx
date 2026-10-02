@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import PayslipModal from '../components/PayslipModal'
+import { api } from '../lib/api'
 import { currentUser } from '../lib/auth'
 import { useEmployees } from '../lib/employeeStore'
 import { computeDay, cutoffOf, peso, todayStr } from '../lib/payroll'
@@ -26,6 +27,21 @@ const hrs = (mins: number) => {
 const m = (v: number) => (v ? peso(v) : '—')
 const n = (v?: number | string | null) => Number(v ?? 0)
 const label = (r: PayrollRun) => `${r.periodStart} to ${r.periodEnd}`
+
+const pad2 = (v: number) => String(v).padStart(2, '0')
+
+// Mon-Fri dates from start to end (YYYY-MM-DD)
+const weekdays = (start: string, end: string) => {
+  const out: string[] = []
+  const [y, mo, d] = start.split('-').map(Number)
+  for (let i = 0; ; i++) {
+    const dt = new Date(y, mo - 1, d + i)
+    const s = `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`
+    if (s > end) break
+    if (dt.getDay() !== 0 && dt.getDay() !== 6) out.push(s)
+  }
+  return out
+}
 
 const badgeStyle: Record<string, string> = {
   draft: 'bg-amber-100 text-amber-800',
@@ -153,19 +169,10 @@ export default function Payroll() {
   const [slip, setSlip] = useState<PayslipRow | null>(null)
   const [review, setReview] = useState(false)
   const [ask, setAsk] = useState<{ title: string; message: string; onYes: () => void } | null>(null)
-  
-  // Demo only: manual days worked, kept in this browser
-  const [demoDays, setDemoDays] = useState<Record<string, number>>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('demoDays') ?? '{}')
-    } catch {
-      return {}
-    }
-  })
 
   const records = useAttendance()
   const employees = useEmployees()
-  const { cutoffDay } = useSettings()
+  const { cutoffDay, shiftStart, shiftEnd } = useSettings()
   const isAdmin = currentUser()?.role === 'admin'
   const current = cutoffOf(todayStr(), cutoffDay)
 
@@ -175,7 +182,7 @@ export default function Payroll() {
   )
   useEffect(() => { refresh() }, [refresh])
 
-    const activeRun = runs.find(
+  const activeRun = runs.find(
     (r) => r.periodStart === current.start && r.periodEnd === current.end && r.status !== 'released'
   )
   const archivedList = runs.filter((r) => r.id !== activeRun?.id)
@@ -207,23 +214,33 @@ export default function Payroll() {
     }
   }
 
-    const editDays = (r: Row) => {
+  // Demo: sets real attendance records so everything stays real-time
+  const editDays = async (r: Row) => {
     const v = window.prompt(`Days worked for ${r.name}:`, String(r.days))
-    if (v === null) return
-    const key = `${current.start}:${r.id}`
-    const next = { ...demoDays }
-    if (v.trim() === '') {
-      delete next[key]
-    } else {
-      const num = Number(v)
-      if (!Number.isFinite(num) || num < 0 || num > 31) {
-        alert('Please enter a valid number.')
-        return
+    if (v === null || v.trim() === '') return
+    const num = Number(v)
+    if (!Number.isFinite(num)) return
+    const days = weekdays(current.start, current.end)
+    const target = Math.min(Math.max(0, Math.round(num)), days.length)
+
+    const worked = records
+      .filter((x) => x.employeeId === r.id && !x.payrollRunId && x.date >= current.start && x.date <= current.end && !x.absent && x.timeIn)
+      .map((x) => x.date)
+      .sort()
+    const put = (date: string, body: object) =>
+      api('/attendance', { method: 'PUT', body: JSON.stringify({ employeeId: r.id, date, ...body }) })
+
+    try {
+      if (target > worked.length) {
+        const free = days.filter((d) => !worked.includes(d)).slice(0, target - worked.length)
+        await Promise.all(free.map((d) => put(d, { timeIn: shiftStart, timeOut: shiftEnd, absent: false })))
+      } else if (target < worked.length) {
+        await Promise.all(worked.slice(target).map((d) => put(d, { timeIn: null, timeOut: null, absent: true })))
       }
-      next[key] = num
+      window.dispatchEvent(new Event('attendance-changed'))
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Could not update days.')
     }
-    localStorage.setItem('demoDays', JSON.stringify(next))
-    setDemoDays(next)
   }
 
   // Real-time calculation of the current cutoff
@@ -236,7 +253,7 @@ export default function Payroll() {
           gross: 0, deduction: 0, otPay: 0, total: 0,
         }
         for (const r of records) {
-                  if (r.employeeId !== emp.id || r.payrollRunId || r.date < current.start || r.date > current.end) continue
+          if (r.employeeId !== emp.id || r.payrollRunId || r.date < current.start || r.date > current.end) continue
           const c = computeDay(r)
           if (c.status !== 'absent') {
             row.days += 1
@@ -249,16 +266,11 @@ export default function Payroll() {
           row.absent += c.absences
           row.otPay += c.overtimePay
         }
-              const o = demoDays[`${current.start}:${emp.id}`]
-        if (o !== undefined) {
-          row.days = o
-          row.gross = o * emp.dailyRate
-        }
         row.total = Math.max(0, row.gross - row.deduction) + row.otPay
         return row
       })
       .sort((a, b) => a.name.localeCompare(b.name))
-  }, [employees, records, current.start, current.end, demoDays])
+  }, [employees, records, current.start, current.end])
 
   const emptyMsg = tab === 'archived' && !shown ? 'No archived payroll yet.' : 'Loading...'
 
@@ -290,7 +302,7 @@ export default function Payroll() {
               <option key={r.id} value={r.id}>{label(r)} ({r.status})</option>
             ))}
           </select>
-              ) : null}
+        ) : null}
 
         {shown && (
           <span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${badgeStyle[shown.status]}`}>
@@ -298,10 +310,10 @@ export default function Payroll() {
           </span>
         )}
 
-                 <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           {tab === 'active' && <CutoffClock cutoff={current.label} />}
 
-                    {isAdmin && shown && shown.status !== 'released' && (
+          {isAdmin && shown && shown.status !== 'released' && (
             <button
               className="whitespace-nowrap rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600"
               disabled={busy}
@@ -390,7 +402,7 @@ export default function Payroll() {
             </button>
           )}
         </div>
-        </div>
+      </div>
 
       {error && (
         <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
@@ -413,7 +425,7 @@ export default function Payroll() {
               {rows.map((r) => (
                 <tr key={r.id}>
                   <td className="font-bold">{r.name}</td>
-                                    <td>
+                  <td>
                     <button className="cursor-pointer font-semibold hover:underline" onClick={() => editDays(r)}>
                       {r.days}
                     </button>
