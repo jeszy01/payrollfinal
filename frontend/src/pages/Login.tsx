@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Landmark, LogIn, Lock, Mail, Receipt, Wallet } from 'lucide-react'
 import { isLoggedIn, login, verifyOtp } from '../lib/auth'
-import BrandMark from '../components/BrandMark'
+
 
 const field ='w-full rounded-xl border bg-[var(--card)] px-4 py-3 text-sm outline-none focus:border-[var(--brand)]'
   
@@ -81,28 +81,39 @@ export default function Login() {
       >
         <span />
 
-        <div>
-            <div className="flex items-center justify-center gap-4">
-            <BrandMark className="size-20 rounded-2xl lg:size-24" />
-            <div className="leading-tight">
-              <h2 className="text-3xl font-extrabold text-white lg:text-4xl">Archon Nell</h2>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.3em] text-[#a9b9f0] lg:text-sm">
-                Incorporated
-              </p>
-            </div>
-          </div>
+       <div className="flex items-center gap-3">
+  <div
+    className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-xl border border-white/30"
+    style={{
+      background: 'linear-gradient(180deg, #4766d8 0%, #3350bd 100%)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,.35), 0 4px 10px rgba(0,0,0,.25)',
+    }}
+  >
+    <img
+      src="/logo_mark.png"
+      alt="Archon Nell Incorporated"
+      className="h-[38px] w-[38px] object-contain"
+      style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,.35))' }}
+    />
+  </div>
+  <div className="leading-none">
+    <h2 className="text-[22px] font-extrabold text-white">Archon Nell</h2>
+    <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#aab8ee]">
+      Incorporated
+    </p>
+  </div>
+</div>
 
-          <ul className="mt-8 hidden space-y-3 lg:block">
-            {features.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-center gap-3 text-sm font-semibold">
-                <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-white/10">
-                  <Icon size={18} />
-                </span>
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
+<ul className="mt-16 hidden space-y-6 lg:block">
+  {features.map(({ icon: Icon, text }) => (
+    <li key={text} className="flex items-center gap-4 text-sm font-semibold">
+      <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-white/10">
+        <Icon size={18} />
+      </span>
+      {text}
+    </li>
+  ))}
+</ul>
 
         <p className="hidden text-xs text-white/50 lg:block">© 2026 Archon Nell Incorporated</p>
       </div>

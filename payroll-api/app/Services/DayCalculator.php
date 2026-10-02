@@ -3,9 +3,26 @@
 namespace App\Services;
 
 use App\Models\AttendanceRecord;
+use Illuminate\Support\Facades\DB;
 
 class DayCalculator
 {
+    private static ?array $holidays = null;
+
+    /** Holiday on a date: ['type' => regular|special, 'multiplier' => float] or null. */
+    public static function holidayOn($date): ?array
+    {
+        if (self::$holidays === null) {
+            self::$holidays = [];
+            foreach (DB::table('holidays')->get(['date', 'type', 'multiplier']) as $h) {
+                self::$holidays[substr((string) $h->date, 0, 10)] = [
+                    'type' => $h->type,
+                    'multiplier' => (float) $h->multiplier,
+                ];
+            }
+        }
+        return self::$holidays[$date->format('Y-m-d')] ?? null;
+    }
 
     private static function mins(string $hhmm): int
     {
@@ -20,7 +37,7 @@ class DayCalculator
             return 0;
         }
 
-              $rules = $r->rules ?: [];
+        $rules = $r->rules ?: [];
         $end = $rules['shiftEnd'] ?? '17:00';
         $threshold = (int) ($rules['otThresholdMinutes'] ?? 5); // 5 = for old records saved before this setting existed
         $over = self::mins($r->time_out) - self::mins($end);
@@ -76,6 +93,9 @@ class DayCalculator
         $otMultiplier = (float) ($rules['overtimeMultiplier'] ?? 1.25);
         $rounding = (int) ($rules['roundingMinutes'] ?? 60);
 
+        $holiday = self::holidayOn($r->date);
+        $hMult = $holiday ? max(1.0, $holiday['multiplier']) : 1.0;
+
         $rate = (float) ($r->daily_rate ?? 0);
         $hourly = $paidHours > 0 ? $rate / $paidHours : 0;
 
@@ -85,9 +105,17 @@ class DayCalculator
         };
         $cost = fn (int $m) => ($m / 60) * $hourly;
 
-        $zero = ['late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0, 'deduction' => 0.0, 'otPay' => 0.0, 'otStatus' => $r->ot_status];
+        $zero = [
+            'late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0,
+            'deduction' => 0.0, 'otPay' => 0.0, 'otStatus' => $r->ot_status,
+            'holiday' => $holiday['type'] ?? null, 'holidayPay' => 0.0,
+        ];
 
         if ($r->absent || ! $r->time_in) {
+            // Regular holiday: paid even if not worked.
+            if ($holiday && $holiday['type'] === 'regular') {
+                return ['status' => 'holiday'] + $zero;
+            }
             return ['status' => 'absent'] + array_merge($zero, ['absences' => 1, 'deduction' => round($rate, 2)]);
         }
 
@@ -103,14 +131,17 @@ class DayCalculator
         $under = $roundUp(self::mins($end) - self::mins($r->time_out));
         $over = self::overtimeMinutes($r); // raw minutes, not rounded
         $approved = $r->ot_status === 'approved';
+        $deduction = round(min($rate, $cost($late + $under)), 2);
 
         return ['status' => 'final'] + array_merge($zero, [
             'late' => $late,
             'under' => $under,
             'over' => $over,
-            'deduction' => round(min($rate, $cost($late + $under)), 2),
-            // Only APPROVED OT is paid.
-            'otPay' => $approved ? round($cost($over) * $otMultiplier, 2) : 0.0,
+            'deduction' => $deduction,
+            // Holiday premium on the paid part of the day (200% regular, 130% special).
+            'holidayPay' => $holiday ? round(max(0, $rate - $deduction) * ($hMult - 1), 2) : 0.0,
+            // Only APPROVED OT is paid; on a holiday the holiday multiplier applies too.
+            'otPay' => $approved ? round($cost($over) * $hMult * $otMultiplier, 2) : 0.0,
         ]);
     }
 }

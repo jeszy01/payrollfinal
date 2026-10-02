@@ -7,11 +7,11 @@ use App\Models\Claim;
 use App\Models\Employee;
 use App\Models\EmployeeLoan;
 use App\Models\Enrollment;
-use App\Models\Holiday;
 use App\Models\PayrollRun;
 use App\Models\Payslip;
 use App\Services\ContributionCalculator;
 use App\Services\DayCalculator;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -83,10 +83,10 @@ class PayrollRunController extends Controller
         }
 
         // Only attendance not yet included in a payroll run
-       $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])
-    ->whereNull('payroll_run_id')
-    ->whereIn('employee_id', Employee::where('status', 'Active')->select('id'))
-    ->get();
+        $records = AttendanceRecord::whereBetween('date', [$data['periodStart'], $data['periodEnd']])
+            ->whereNull('payroll_run_id')
+            ->whereIn('employee_id', Employee::where('status', 'Active')->select('id'))
+            ->get();
 
         $open = $records->filter(fn ($r) => DayCalculator::compute($r)['status'] === 'working')->count();
         if ($open > 0) {
@@ -105,10 +105,19 @@ class PayrollRunController extends Controller
 
         $byEmployee = $records->groupBy('employee_id');
 
-        $holidays = Holiday::whereBetween('date', [$data['periodStart'], $data['periodEnd']])
-            ->get()->keyBy(fn ($h) => $h->date->format('Y-m-d'));
+        // Regular holidays (Mon-Fri) in this cutoff are paid even with no attendance record.
+        // Skipped when an earlier run of the same cutoff already paid them.
+        $paidHolidays = PayrollRun::where('period_start', $data['periodStart'])
+            ->where('period_end', $data['periodEnd'])->exists()
+            ? collect()
+            : DB::table('holidays')
+                ->whereBetween('date', [$data['periodStart'], $data['periodEnd']])
+                ->where('type', 'regular')->pluck('date')
+                ->map(fn ($d) => substr((string) $d, 0, 10))
+                ->filter(fn ($d) => ! in_array(Carbon::parse($d)->dayOfWeek, [0, 6]))
+                ->values();
 
-        $run = DB::transaction(function () use ($data, $byEmployee, $records, $holidays) {
+        $run = DB::transaction(function () use ($data, $byEmployee, $records, $paidHolidays) {
             $run = PayrollRun::create([
                 'period_start' => $data['periodStart'],
                 'period_end' => $data['periodEnd'],
@@ -122,21 +131,24 @@ class PayrollRunController extends Controller
             $loans = EmployeeLoan::where('balance', '>', 0)
                 ->where('start_date', '<=', $data['periodEnd'])->get()->groupBy('employee_id');
 
-            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates, $enrollments, $loans, $claimsByEmployee, $holidays) {
+            Employee::with('position')->where('status', 'Active')->get()->each(function ($emp) use ($run, $byEmployee, $rates, $enrollments, $loans, $claimsByEmployee, $paidHolidays) {
                 $s = ['days' => 0, 'late' => 0, 'under' => 0, 'over' => 0, 'absences' => 0, 'gross' => 0.0, 'deduction' => 0.0, 'otPay' => 0.0];
 
                 foreach ($byEmployee->get($emp->id, collect()) as $r) {
                     $c = DayCalculator::compute($r);
-                    if ($c['status'] !== 'absent') {
+                    $dailyRate = (float) ($r->daily_rate ?? $emp->daily_rate);
+
+                    if ($c['status'] === 'holiday') {
+                        // Regular holiday, not worked: paid at 100%.
                         $s['days']++;
-                        $dailyRate = $r->daily_rate ?? $emp->daily_rate;
                         $s['gross'] += $dailyRate;
-                        $h = $holidays->get($r->date->format('Y-m-d'));
-                        if ($h) {
-                            $s['gross'] += $dailyRate * ($h->multiplier - 1);
-                        }
+                    } elseif ($c['status'] !== 'absent') {
+                        $s['days']++;
+                        // Holiday premium (200% regular / 130% special) comes only from DayCalculator.
+                        $s['gross'] += $dailyRate + $c['holidayPay'];
                         $s['deduction'] += $c['deduction'];
                     }
+
                     $s['late'] += $c['late'];
                     $s['under'] += $c['under'];
                     // Only approved OT counts (minutes and pay).
@@ -145,6 +157,16 @@ class PayrollRunController extends Controller
                     }
                     $s['absences'] += $c['absences'];
                     $s['otPay'] += $c['otPay'];
+                }
+
+                // Regular holidays with no record at all are still paid.
+                $recorded = $byEmployee->get($emp->id, collect())
+                    ->map(fn ($r) => $r->date->format('Y-m-d'))->all();
+                foreach ($paidHolidays as $d) {
+                    if (! in_array($d, $recorded, true)) {
+                        $s['days']++;
+                        $s['gross'] += (float) $emp->daily_rate;
+                    }
                 }
 
                 $total = round(max(0, $s['gross'] - $s['deduction']) + $s['otPay'], 2);
@@ -256,7 +278,6 @@ class PayrollRunController extends Controller
     // draft/approved only; attendance returns to Active
     public function destroy(PayrollRun $payrollRun)
     {
-
         DB::transaction(function () use ($payrollRun) {
             AttendanceRecord::where('payroll_run_id', $payrollRun->id)->update(['payroll_run_id' => null]);
             Claim::where('payroll_run_id', $payrollRun->id)->update(['payroll_run_id' => null]);

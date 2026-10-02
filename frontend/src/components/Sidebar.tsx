@@ -14,7 +14,6 @@ const groups = [
     base: '/payroll',
 links: [
   ['/payroll/runs', 'Payroll Runs'],
-  ['/overtime', 'Overtime'],
   ['/payroll/settings', 'Payroll Settings'],
   ['/payroll/holidays', 'Holiday Calendar'],
 ],

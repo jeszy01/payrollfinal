@@ -14,7 +14,8 @@ const dot = { regular: 'bg-red-500', special: 'bg-amber-500' }
 const field = 'rounded-lg border bg-transparent px-3 py-2 text-sm'
 
 export default function Holidays() {
-  const now = new Date()
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }))
+  const todayStr = ymd(now.getFullYear(), now.getMonth(), now.getDate())
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
   const [items, setItems] = useState<Holiday[]>([])
@@ -114,12 +115,14 @@ export default function Holidays() {
             if (!d) return <div key={i} />
             const h = byDate.get(ymd(year, month, d))
             return (
-              <button
-                key={i}
-                onClick={() => openDay(d)}
-                className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border text-sm hover:bg-slate-100 dark:hover:bg-white/10"
-                style={{ borderColor: 'var(--line)' }}
-              >
+             <button
+  key={i}
+  onClick={() => openDay(d)}
+  className={`flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border text-sm hover:bg-slate-100 dark:hover:bg-white/10 ${
+    ymd(year, month, d) === todayStr ? 'ring-2 ring-[var(--brand)]' : ''
+  }`}
+  style={{ borderColor: 'var(--line)' }}
+>
                 {d}
                 {h && <span className={`size-1.5 rounded-full ${dot[h.type]}`} />}
               </button>
