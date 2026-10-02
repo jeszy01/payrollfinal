@@ -81,24 +81,24 @@ export default function Login() {
       >
         <span />
 
-       <div className="flex items-center gap-3">
+     <div className="flex items-center justify-center gap-5">
   <div
-    className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-xl border border-white/30"
+    className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-2xl border border-white/30 lg:h-[96px] lg:w-[96px]"
     style={{
       background: 'linear-gradient(180deg, #4766d8 0%, #3350bd 100%)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,.35), 0 4px 10px rgba(0,0,0,.25)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,.35), 0 8px 20px rgba(0,0,0,.25)',
     }}
   >
     <img
       src="/logo_mark.png"
       alt="Archon Nell Incorporated"
-      className="h-[38px] w-[38px] object-contain"
-      style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,.35))' }}
+      className="h-[54px] w-[54px] object-contain lg:h-[72px] lg:w-[72px]"
+      style={{ filter: 'drop-shadow(0 0 5px rgba(255,255,255,.35))' }}
     />
   </div>
   <div className="leading-none">
-    <h2 className="text-[22px] font-extrabold text-white">Archon Nell</h2>
-    <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#aab8ee]">
+    <h2 className="text-[30px] font-extrabold text-white lg:text-[42px]">Archon Nell</h2>
+    <p className="mt-2 text-xs font-bold uppercase tracking-[0.25em] text-[#aab8ee] lg:text-[15px]">
       Incorporated
     </p>
   </div>
