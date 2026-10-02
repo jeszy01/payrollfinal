@@ -65,9 +65,7 @@ use App\Http\Controllers\OvertimeController;
 
     Route::get('/attendance', [AttendanceController::class, 'index']);
     Route::put('/attendance', [AttendanceController::class, 'upsert']);
-    Route::get('/attendance/overtime', [OvertimeController::class, 'index']);
-    Route::post('/attendance/overtime/{id}/approve', [OvertimeController::class, 'approve']);
-    Route::post('/attendance/overtime/{id}/reject', [OvertimeController::class, 'reject']);
+
 
     Route::get('/adjustments', [AdjustmentController::class, 'index']);
     Route::post('/adjustments', [AdjustmentController::class, 'store']);

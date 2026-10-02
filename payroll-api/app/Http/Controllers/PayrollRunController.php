@@ -96,12 +96,7 @@ class PayrollRunController extends Controller
         }
 
         // Records get locked into the run, so OT must be decided first or it would never be paid.
-        $pendingOt = $records->where('ot_status', 'pending')->count();
-        if ($pendingOt > 0) {
-            return response()->json([
-                'message' => "{$pendingOt} overtime request(s) are still pending. Approve or reject them before generating payroll.",
-            ], 422);
-        }
+
 
         $byEmployee = $records->groupBy('employee_id');
 

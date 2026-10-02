@@ -67,16 +67,10 @@ public static function applyOvertime(AttendanceRecord $r, ?string $reason): bool
         return true;
     }
 
-    // Same OT as before: keep the existing review state.
-    if ($r->ot_status && (int) $r->ot_minutes === $ot) {
-        return true;
-    }
-
-    $reason = trim((string) $reason);
-
+    // No approval step: any OT past the grace period is counted and paid.
     $r->ot_minutes = $ot;
-    $r->ot_reason = $reason !== '' ? $reason : null;
-    $r->ot_status = 'pending';
+    $r->ot_reason = null;
+    $r->ot_status = 'approved';
     $r->ot_remarks = null;
     $r->ot_reviewed_by = null;
     $r->ot_reviewed_at = null;
