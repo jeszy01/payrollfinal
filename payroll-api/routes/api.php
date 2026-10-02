@@ -16,8 +16,23 @@ use App\Http\Middleware\LogActivity;
 use App\Http\Controllers\OvertimeController;
 
     Route::get('/health', fn () => ['status' => 'ok']);
+    Route::get('/fix-ot-once', function (\Illuminate\Http\Request $request) {
+    abort_unless($request->query('key') === 'ot-fix-2026-x9', 403);
+
+    return \App\Models\AttendanceRecord::whereNotNull('time_out')->whereNull('ot_status')->get()->map(function ($r) {
+        $ot = \App\Services\DayCalculator::overtimeMinutes($r);
+        if ($ot > 0) {
+            $r->ot_minutes = $ot;
+            $r->ot_reason = 'Recorded before OT approval update';
+            $r->ot_status = 'pending';
+            $r->save();
+            return $r->id;
+        }
+    })->filter()->values();
+});
     Route::post('/login', [AuthController::class, 'login'])->middleware(['throttle:10,1', LogActivity::class]);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware(['throttle:10,1', LogActivity::class]);
+
 
     Route::post('/attendance-events', [AttendanceEventController::class, 'store'])
     ->middleware([ApiKey::class, 'throttle:120,1']);
