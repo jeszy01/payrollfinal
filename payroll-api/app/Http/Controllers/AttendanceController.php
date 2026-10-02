@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AttendanceRecord;
 use App\Models\Employee;
 use App\Models\PayrollSetting;
+use App\Services\DayCalculator;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
@@ -23,6 +24,12 @@ class AttendanceController extends Controller
             'absent' => $r->absent,
             'archived' => $r->archived,
             'payrollRunId' => $r->payroll_run_id,
+            'otMinutes' => $r->ot_minutes,
+            'otReason' => $r->ot_reason,
+            'otStatus' => $r->ot_status,
+            'otRemarks' => $r->ot_remarks,
+            'otReviewedBy' => $r->ot_reviewed_by,
+            'otReviewedAt' => $r->ot_reviewed_at?->toIso8601String(),
         ];
     }
 
@@ -47,6 +54,7 @@ class AttendanceController extends Controller
             'timeOut' => 'nullable|date_format:H:i',
             'absent' => 'sometimes|boolean',
             'archived' => 'sometimes|boolean',
+            'otReason' => 'nullable|string|max:500',
         ]);
 
         $employee = Employee::with('position')->findOrFail($data['employeeId']);
@@ -76,6 +84,15 @@ class AttendanceController extends Controller
             if (array_key_exists($input, $data)) {
                 $record->{$column} = $data[$input];
             }
+        }
+
+        // OT: reason is required only when there is OT (6+ min past shift end).
+        if (! DayCalculator::applyOvertime($record, $data['otReason'] ?? null)) {
+            return response()->json([
+                'message' => 'OT reason is required.',
+                'requiresOtReason' => true,
+                'otMinutes' => DayCalculator::overtimeMinutes($record),
+            ], 422);
         }
 
         $record->save();

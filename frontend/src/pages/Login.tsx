@@ -70,7 +70,7 @@ export default function Login() {
 
    return (
     <div className="grid min-h-screen grid-rows-[auto_1fr] lg:grid-cols-2 lg:grid-rows-1" style={{ background: 'var(--bg-page)' }}>
-      {/* Left / top banner */}
+          {/* Left / top banner */}
       <div
         className="flex flex-col justify-between gap-8 p-6 text-white lg:p-12"
         style={{
@@ -78,27 +78,25 @@ export default function Login() {
             'radial-gradient(circle at 20% 0%, #4a6ee0 0%, transparent 55%), linear-gradient(180deg, #2b4fd0 0%, #1a2f8a 100%)',
         }}
       >
-       <span />
+        <span />
 
         <div>
-    <div className="flex items-center justify-center gap-4">
-  <div
-    className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border border-white/30 shadow-lg shadow-black/25 lg:h-24 lg:w-24"
-    style={{ background: 'linear-gradient(180deg, #4a6ee0 0%, #3452c9 100%)' }}
-  >
-    <img
-      src="/logo_mark.png"
-      alt="Archon Nell Incorporated"
-      className="h-[72%] w-[72%] object-contain"
-    />
-  </div>
-  <div className="leading-tight">
-    <h2 className="text-3xl font-extrabold text-white lg:text-4xl">Archon Nell</h2>
-    <p className="mt-1 text-xs font-bold uppercase tracking-[0.3em] text-[#a9b9f0] lg:text-sm">
-      Incorporated
-    </p>
-  </div>
-</div>
+          <div className="flex items-center justify-center gap-4">
+            <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-white shadow-lg shadow-black/25 lg:h-24 lg:w-24">
+              <img
+                src="/archon-nell-icon.png"
+                alt="Archon Nell Incorporated"
+                className="h-[85%] w-[85%] object-contain"
+              />
+            </div>
+            <div className="leading-tight">
+              <h2 className="text-3xl font-extrabold text-white lg:text-4xl">Archon Nell</h2>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.3em] text-[#a9b9f0] lg:text-sm">
+                Incorporated
+              </p>
+            </div>
+          </div>
+
           <ul className="mt-8 hidden space-y-3 lg:block">
             {features.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3 text-sm font-semibold">
@@ -113,18 +111,12 @@ export default function Login() {
 
         <p className="hidden text-xs text-white/50 lg:block">© 2026 Archon Nell Incorporated</p>
       </div>
-
       {/* Form */}
       <div className="grid place-items-center p-6 lg:p-12">
         <form
           onSubmit={step === 'credentials' ? submitCredentials : submitCode}
           className="w-full max-w-md"
         >
-          <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#e4eaff] px-3 py-1.5 text-xs font-semibold text-[var(--brand)]">
-            <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
-            Secure Sign In
-          </span>
-
           <h1 className="text-3xl font-extrabold">
             {step === 'credentials' ? 'Welcome back' : 'Verification code'}
           </h1>
