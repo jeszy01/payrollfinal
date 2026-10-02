@@ -80,6 +80,12 @@ if ($status >= 400) {
 
     private function describe(string $method, string $uri): array
     {
+         if ($uri === 'devices/others') {
+            return ['Auth', 'Removed', 'Logged out all other devices'];
+        }
+        if (str_starts_with($uri, 'devices/')) {
+            return ['Auth', 'Removed', 'Removed a logged-in device'];
+        }
         $map = [
             '#^employees#' => ['Employees', 'employee'],
             '#^positions#' => ['Employees', 'position'],

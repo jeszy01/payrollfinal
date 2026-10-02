@@ -15,6 +15,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
 
   if (res.status === 401 && path !== '/login') {
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
     if (location.pathname !== '/login') location.assign('/login')
   }
 

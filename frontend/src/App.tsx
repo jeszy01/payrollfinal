@@ -16,10 +16,13 @@ import Claims from './pages/Claims'
 import AuditLogs from './pages/AuditLogs'
 import ClaimTypes from './pages/ClaimTypes'
 import Login from './pages/Login'
+import Devices from './pages/Devices'
 import { isLoggedIn } from './lib/auth'
+import { useSessionWatch } from './lib/useSessionWatch'
 import UserManagement from './pages/UserManagement'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
+  useSessionWatch()
   return isLoggedIn() ? children : <Navigate to="/login" replace />
 }
 
@@ -40,13 +43,14 @@ export default function App() {
         <Route path="/payroll/runs" element={<Payroll />} />
         <Route path="/payroll/settings" element={<PayrollSettings />} />
         <Route path="/audit-logs" element={<AuditLogs />} />
+        <Route path="/devices" element={<Devices />} />
         <Route path="/compensation/grades" element={<SalaryGrades />} />
         <Route path="/compensation/adjustments" element={<Adjustments />} />
         <Route path="/benefits/government" element={<GovernmentContributions />} />
         <Route path="/benefits/hmo" element={<HmoPlans />} />
         <Route path="/benefits/company" element={<CompanyBenefits />} />
         <Route path="/benefits/enrollments" element={<Enrollments />} />
-               <Route path="/benefits/loans" element={<Loans />} />
+        <Route path="/benefits/loans" element={<Loans />} />
         <Route path="/claims" element={<Claims />} />
         <Route path="/claims/types" element={<ClaimTypes />} />
         <Route path="/settings" element={<UserManagement />} />
