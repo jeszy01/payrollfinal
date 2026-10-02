@@ -27,8 +27,8 @@ export default function Overtime() {
   const load = useCallback(async () => {
     try {
             setRows(await api<Ot[]>('/attendance/overtime?status=all'))
-    } catch {
-      /* retry on next interval */
+       } catch (e) {
+      console.error('Overtime load failed:', e)
     }
   }, [])
 

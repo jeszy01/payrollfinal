@@ -42,7 +42,11 @@ class AttendanceEventController extends Controller
                 ], 422); // time_out is NOT saved until a reason is sent
             }
 
-            $record->save();
+                    $record->save();
+
+            if ($record->ot_status === 'pending') {
+                \App\Services\Notifier::send('ot_pending', 'OT pending approval', "{$record->employee_name} has overtime on {$record->date->format('M d')}.", 'all', '/overtime');
+            }
 
             return response()->json($record);
         }
