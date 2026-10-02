@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Landmark, LogIn, Lock, Mail, Receipt, Wallet } from 'lucide-react'
 import { isLoggedIn, login, verifyOtp } from '../lib/auth'
+import BrandMark from '../components/BrandMark'
 
 const field ='w-full rounded-xl border bg-[var(--card)] px-4 py-3 text-sm outline-none focus:border-[var(--brand)]'
   
@@ -81,14 +82,8 @@ export default function Login() {
         <span />
 
         <div>
-          <div className="flex items-center justify-center gap-4">
-            <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-white shadow-lg shadow-black/25 lg:h-24 lg:w-24">
-              <img
-                src="/archon-nell-icon.png"
-                alt="Archon Nell Incorporated"
-                className="h-[85%] w-[85%] object-contain"
-              />
-            </div>
+            <div className="flex items-center justify-center gap-4">
+            <BrandMark className="size-20 rounded-2xl lg:size-24" />
             <div className="leading-tight">
               <h2 className="text-3xl font-extrabold text-white lg:text-4xl">Archon Nell</h2>
               <p className="mt-1 text-xs font-bold uppercase tracking-[0.3em] text-[#a9b9f0] lg:text-sm">

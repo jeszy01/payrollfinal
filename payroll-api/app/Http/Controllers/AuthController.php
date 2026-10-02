@@ -57,15 +57,19 @@ class AuthController extends Controller
         return $this->issueToken($user, $request);
     }
 
-    private function issueToken(User $user, Request $request): array
+      private function issueToken(User $user, Request $request): array
     {
         $new = $user->createToken('web');
 
-        // Remember which device/browser this token belongs to.
-        $new->accessToken->forceFill([
-            'device_name' => $this->deviceName($request),
-            'ip_address' => $request->ip(),
-        ])->save();
+        // Device info is a bonus: never let it break sign-in.
+        try {
+            $new->accessToken->forceFill([
+                'device_name' => $this->deviceName($request),
+                'ip_address' => $request->ip(),
+            ])->save();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return [
             'token' => $new->plainTextToken,
