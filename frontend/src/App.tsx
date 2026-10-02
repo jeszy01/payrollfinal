@@ -21,7 +21,6 @@ import { isLoggedIn } from './lib/auth'
 import { useSessionWatch } from './lib/useSessionWatch'
 import UserManagement from './pages/UserManagement'
 import Notifications from './pages/Notifications'
-import Overtime from './pages/Overtime'
 import Holidays from './pages/Holidays'
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -59,8 +58,7 @@ export default function App() {
         <Route path="/claims/types" element={<ClaimTypes />} />
         <Route path="/settings" element={<UserManagement />} />
         <Route path="/notifications" element={<Notifications />} />
-        <Route path="/overtime" element={<Overtime />} />
-                <Route path="/payroll/holidays" element={<Holidays />} />
+        <Route path="/payroll/holidays" element={<Holidays />} />
       </Route>
     </Routes>
   )
